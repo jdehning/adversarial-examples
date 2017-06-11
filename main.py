@@ -63,4 +63,3 @@ testX /= 255.0
 yPred = cnn.predict_classes(testX)
 
 np.savetxt('mnist-vggnet.csv', np.c_[range(1,len(yPred)+1),yPred], delimiter=',', header = 'ImageId,Label', comments = '', fmt='%d')
->>>>>>> 907c3758f8ddef0b2167766a9738ecbd1110923f
