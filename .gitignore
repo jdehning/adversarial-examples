@@ -4,3 +4,6 @@
 # Byte-compiled / optimized
 __pycache__/
 *.py[cod]
+
+#ignore data
+data/
