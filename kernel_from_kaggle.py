@@ -61,13 +61,13 @@ def create_model_kaggle():
     cnn.summary()
     cnn.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-    graph = tf.get_default_graph()
+    #graph = tf.get_default_graph()
     #for n in graph.as_graph_def().node:
     #    print(n.name)
     #    print(n.op)
 
-    for lay in cnn.layers:
-        print(lay.input, lay.output)
+    #for lay in cnn.layers:
+    #    print(lay.input, lay.output)
 
     return cnn
 
@@ -89,13 +89,10 @@ def create_model2():
     return model
 
 model = create_model_kaggle()
-time_beg = time.time()
 model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=1)
-print(time.time() - time_beg)
 
 model.save("keras_model1")
 
-graph = tf.get_default_graph()
 
 
 #score = model.evaluate(X_test, Y_test, verbose=1)
