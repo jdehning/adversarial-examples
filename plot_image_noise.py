@@ -19,11 +19,11 @@ def show_img_noise(image, noise, predictImage=-1, predictNoise=-1, predictAdded=
 	else:
 		axarr[0].set_title('Image:')
 	if (predictNoise != -1):
-		axarr[1].set_title('Prediction Noise: ' + str(predictNoise) + "; scaling: " + str(noiseScale))
+		axarr[1].set_title('Prediction Noise: ' + str(predictNoise) + "; scaling: " + str(noiseScale)[:4])
 	else:
-		axarr[1].set_title('Noise; scaling: ' + str(noiseScale))
+		axarr[1].set_title('Noise; scaling: ' + str(noiseScale)[:4])
 	if (predictAdded != -1):
-		axarr[2].set_title('Prediction Image + Noise: ' + str(predictAdded) + "; scaling = " + str(scaleIN))
+		axarr[2].set_title('Prediction Image + Noise: ' + str(predictAdded) + "; scaling = " + str(scaleIN)[:4])
 	else:
-		axarr[2].set_title('Image + Noise; scaling = ' + str(scaleIN))
+		axarr[2].set_title('Image + Noise; scaling = ' + str(scaleIN)[:4])
 	plt.show()

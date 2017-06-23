@@ -74,7 +74,7 @@ def minimize_func (r, c, image, target, loss_func):
 	"""
 	#print("d")
 	#return vec_abs(image + r)**2
-	return c * vec_abs(r) + loss_func(image + r, target)[0]
+	return c * vec_abs(r) + loss_func(normalize_image(image + r), target)[0]
 
 def grad_min_func(r, c, image, target, model):
 	#print( np.shape(r))
@@ -82,18 +82,20 @@ def grad_min_func(r, c, image, target, model):
 	#	model, np.array([image + r]), np.array([target]))[0]))
 	#print(np.array([target]))
 	gradien = get_gradient(
-		model, np.array([image + r]), np.array([target]))[0]
-	print(gradien)
+		model, np.array([normalize_image(image + r)]), np.array([target]))[0].astype("float64")
 	if(not np.any(gradien != 0)):
 		print("grad 0")
-	#return c * r / vec_abs(r) + gradien
-	return gradien
+	return c * r / vec_abs(r) + gradien
+	#return gradien
 
 def vec_abs(arr):
 	"""
 	returns the absolute value of the array which is interpreted as a vector
 	"""
 	return np.sqrt(np.sum(arr*arr))
+
+def normalize_image(image):
+	return image/np.max(image)
 
 def create_loss_func_for_minimize(model):
 	"""
@@ -111,13 +113,13 @@ def create_loss_func_for_minimize(model):
 		prediction = tf.convert_to_tensor(prediction)
 		target = tf.convert_to_tensor(np.array([target], dtype="float32"))
 		#print("f")
-		return loss(prediction, target).eval(session=sess)
+		return loss(prediction, target).eval(session=sess).astype("float64")
 	return loss_func
 
 def run_batch_minimize(model, images, truePrediction):
 	loss_func = create_loss_func_for_minimize(model)
 	i = 0
-	c = 0
+	c = 1.
 	rs = []
 	imgShape = np.shape(images[0])
 	def cb(a):
@@ -126,28 +128,39 @@ def run_batch_minimize(model, images, truePrediction):
 		if (np.shape(r) != imgShape):
 			r = np.reshape(r, imgShape)
 		#print("c")
-		temp = minimize_func(r, c, image, np.append(truePrediction[i][4:],truePrediction[i][:4]), loss_func)
+		temp = minimize_func(r, c, image, np.append(truePrediction[i][shuffle:],truePrediction[i][:shuffle]), loss_func)
 		print(temp)
 		return temp
 	def grad(r):
 		shapeOld = np.shape(r)
 		if (np.shape(r) != imgShape):
 			r = np.reshape(r, imgShape)
-		return np.reshape(grad_min_func(r, c, image, np.append(truePrediction[i][4:],truePrediction[i][:4]), model), shapeOld)
+		return np.reshape(grad_min_func(r, c, image, np.append(truePrediction[i][shuffle:],truePrediction[i][:shuffle]), model), shapeOld)
 
-	#def constrain_func(r):
-	#	return loss_func()
-	#constrains = {
-	#	fun: loss_func
-	#}
+	#create bounds array
+	bounds = np.zeros((images[0].size, 2), dtype="float64")
+	bounds[:,1] = 1.0
+
+
+	curR = np.ones(imgShape)*10
 	for image in images:
-		#print (to_minimize(np.array(np.random.rand(*imgShape), dtype="float32")))
-		#print(grad(np.array(np.random.rand(*imgShape)/10., dtype="float32")))
-		rs.append( np.reshape(scipy.optimize.minimize(to_minimize, jac=grad, 
-			#x0=np.zeros(imgShape),
-			x0=np.random.rand(*imgShape), 
-			method="BFGS", callback=cb, tol=0.01, options={"maxiter": 20,
-			"eps":0.01} ).x, imgShape) )
+		for shuffle in np.arange(1, 10):
+			#print (to_minimize(np.array(np.random.rand(*imgShape), dtype="float32")))
+			#print(grad(np.array(np.random.rand(*imgShape)/10., dtype="float32")))
+			tempR = np.reshape(scipy.optimize.minimize(to_minimize, jac=grad, 
+				#x0=np.zeros(imgShape),
+				x0=np.random.rand(*imgShape)*5, bounds=bounds,
+				method="L-BFGS-B", callback=cb, tol=0.001, options={"maxiter": 20,
+				"eps":0.001} ).x, imgShape) 
+			prediction = np.argmax(model.predict(np.array([image + tempR], dtype="float64"), batch_size=1, verbose=0))
+			print(vec_abs(tempR) < vec_abs(curR))
+			print(prediction != np.argmax(truePrediction))
+			print(np.argmax(prediction))
+			print(np.argmax(truePrediction))
+			if (vec_abs(tempR) < vec_abs(curR) and prediction != np.argmax(truePrediction) ):
+				print("overWrite")
+				curR = tempR
+		rs.append(curR)
 		i += 1
 	return np.array(rs)
 
@@ -157,7 +170,7 @@ dataX, dataY = read_data_mnist()
 #print(grad_min_func(dataX[3], 5, dataX[0], dataY[7], model))
 #rint (create_loss_func_for_minimize(model)(np.array(np.random.rand(28,28,1), dtype="float32"), dataY[1]))
 rs = run_batch_minimize(model, np.array([dataX[1]]), np.array([dataY[1]]))
-predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float32"), batch_size=1, verbose=0))
-predicNoise = np.argmax(model.predict(np.array([rs[0]], dtype="float32"), batch_size=1, verbose=0))
-predicImgNoise = np.argmax(model.predict(np.array([dataX[1] + rs[0]], dtype="float32"), batch_size=1, verbose=0))
+predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float64"), batch_size=1, verbose=0))
+predicNoise = np.argmax(model.predict(np.array([rs[0]], dtype="float64"), batch_size=1, verbose=0))
+predicImgNoise = np.argmax(model.predict(np.array([dataX[1] + rs[0]], dtype="float64"), batch_size=1, verbose=0))
 show_img_noise(dataX[1], rs[0], predicImg, predicNoise, predicImgNoise)
