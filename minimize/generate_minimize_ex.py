@@ -85,6 +85,7 @@ def grad_min_func(r, c, image, target, model):
         model, np.array([normalize_image(image + r)]), np.array([target]))[0].astype("float64")
     if(not np.any(gradien != 0)):
         print("grad 0")
+    print(np.sum(np.abs(c * r / vec_abs(r))), np.sum(np.abs(gradien)))
     return c * r / vec_abs(r) + gradien
     #return gradien
 
