@@ -130,7 +130,7 @@ def run_batch_minimize(model, images, truePrediction):
         #print("c")
         temp = minimize_func(r, c, image, np.append(truePrediction[i][shuffle:],truePrediction[i][:shuffle]), loss_func)
         print(temp)
-return temp
+        return temp
     def grad(r):
         shapeOld = np.shape(r)
         if (np.shape(r) != imgShape):
