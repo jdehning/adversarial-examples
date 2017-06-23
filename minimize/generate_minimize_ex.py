@@ -11,6 +11,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir) 
 from plot_image_noise import show_img_noise
+#from generate_adv_ex import get_gradient
 import scipy.optimize, scipy.stats
 import time
 
@@ -19,6 +20,27 @@ import time
 sess = tf.Session()
 from keras import backend as K
 K.set_session(sess)
+
+def get_gradient(model, images, results):
+    #images and results need to be a list or array of images and results
+
+    images = np.array(images, dtype="float32")
+    results = np.array(results, dtype="float32")
+    assert len(images.shape) == 4
+    assert len(results.shape) == 2
+    # define loss function like in the model
+    loss = K.categorical_crossentropy(model.outputs[0], tf.constant(results))
+
+    # define gradient operator
+    grad_op = tf.gradients(loss, model.inputs[0])[0]
+
+    # retrieve the input placeholder (the image)
+    graph_def = tf.get_default_graph().as_graph_def()
+    input_placeholder = tf.get_default_graph().get_tensor_by_name(graph_def.node[0].name + ":0")
+
+    # compute the gradient
+    grad = sess.run(grad_op, feed_dict={input_placeholder: np.array(images), K.learning_phase(): 0})
+    return grad
 
 
 def read_data_mnist():
@@ -51,8 +73,21 @@ def minimize_func (r, c, image, target, loss_func):
 	returns: value to be minimized
 	"""
 	#print("d")
-	return vec_abs(image + r)**2
-	#return c * vec_abs(r) + loss_func(image + r, target)[0]
+	#return vec_abs(image + r)**2
+	return c * vec_abs(r) + loss_func(image + r, target)[0]
+
+def grad_min_func(r, c, image, target, model):
+	#print( np.shape(r))
+	#print(np.shape(get_gradient(
+	#	model, np.array([image + r]), np.array([target]))[0]))
+	#print(np.array([target]))
+	gradien = get_gradient(
+		model, np.array([image + r]), np.array([target]))[0]
+	print(gradien)
+	if(not np.any(gradien != 0)):
+		print("grad 0")
+	#return c * r / vec_abs(r) + gradien
+	return gradien
 
 def vec_abs(arr):
 	"""
@@ -82,7 +117,7 @@ def create_loss_func_for_minimize(model):
 def run_batch_minimize(model, images, truePrediction):
 	loss_func = create_loss_func_for_minimize(model)
 	i = 0
-	c = 20.
+	c = 0
 	rs = []
 	imgShape = np.shape(images[0])
 	def cb(a):
@@ -94,21 +129,35 @@ def run_batch_minimize(model, images, truePrediction):
 		temp = minimize_func(r, c, image, np.append(truePrediction[i][4:],truePrediction[i][:4]), loss_func)
 		print(temp)
 		return temp
+	def grad(r):
+		shapeOld = np.shape(r)
+		if (np.shape(r) != imgShape):
+			r = np.reshape(r, imgShape)
+		return np.reshape(grad_min_func(r, c, image, np.append(truePrediction[i][4:],truePrediction[i][:4]), model), shapeOld)
 
-	def constrain_func(r):
-		return loss_func()
-	constrains = {
-		fun: loss_func
-	}
+	#def constrain_func(r):
+	#	return loss_func()
+	#constrains = {
+	#	fun: loss_func
+	#}
 	for image in images:
 		#print (to_minimize(np.array(np.random.rand(*imgShape), dtype="float32")))
-		rs.append( scipy.optimize.minimize(to_minimize, x0=np.random.rand(*imgShape)/10., 
-			method="L-BFGS-B", callback=cb), tol=0.1, options={maxiter: 2} )
+		#print(grad(np.array(np.random.rand(*imgShape)/10., dtype="float32")))
+		rs.append( np.reshape(scipy.optimize.minimize(to_minimize, jac=grad, 
+			#x0=np.zeros(imgShape),
+			x0=np.random.rand(*imgShape), 
+			method="BFGS", callback=cb, tol=0.01, options={"maxiter": 20,
+			"eps":0.01} ).x, imgShape) )
 		i += 1
 	return np.array(rs)
 
 model = load_model('../keras_model1')
 dataX, dataY = read_data_mnist()
-print (create_loss_func_for_minimize(model)(np.array(np.random.rand(28,28,1), dtype="float32"), dataY[1]))
+#print (dataY[7])
+#print(grad_min_func(dataX[3], 5, dataX[0], dataY[7], model))
+#rint (create_loss_func_for_minimize(model)(np.array(np.random.rand(28,28,1), dtype="float32"), dataY[1]))
 rs = run_batch_minimize(model, np.array([dataX[1]]), np.array([dataY[1]]))
-show_img_noise(dataX[1], rs[0])
+predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float32"), batch_size=1, verbose=0))
+predicNoise = np.argmax(model.predict(np.array([rs[0]], dtype="float32"), batch_size=1, verbose=0))
+predicImgNoise = np.argmax(model.predict(np.array([dataX[1] + rs[0]], dtype="float32"), batch_size=1, verbose=0))
+show_img_noise(dataX[1], rs[0], predicImg, predicNoise, predicImgNoise)
