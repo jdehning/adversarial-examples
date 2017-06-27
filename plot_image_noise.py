@@ -8,12 +8,12 @@ def show_img_noise(image, noise, predictImage=-1, predictNoise=-1, predictAdded=
     compare those
     """
     f, axarr = plt.subplots(1,3, figsize=(15, 4), sharex=True)
-    axarr[0].imshow(image[:,:,0], vmin=0, vmax=1)
+    axarr[0].imshow(image[:,:,0], vmin=0, vmax=1, cmap="gray")
     noiseScale = 1./np.max(noise[:,:,0])
-    axarr[1].imshow(noise[:,:,0] * noiseScale, vmin=0, vmax=1)
+    axarr[1].imshow(noise[:,:,0] * noiseScale, vmin=0, vmax=1, cmap="gray")
     imgPNoise = image[:,:,0]+noise[:,:,0]
     scaleIN = 1./np.max(imgPNoise)
-    axarr[2].imshow(imgPNoise * scaleIN, vmin=0, vmax=1)
+    axarr[2].imshow(imgPNoise * scaleIN, vmin=0, vmax=1, cmap="gray")
     if (predictImage != -1):
         axarr[0].set_title('Prediction Image: ' + str(predictImage))
     else:

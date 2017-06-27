@@ -9,10 +9,11 @@ import seaborn as sns
 import keras
 import keras.layers.core as core
 from keras.models import Sequential
-from keras.layers import Input, Dropout, Flatten, Convolution2D, MaxPooling2D, Dense, Activation, GaussianNoise
+from keras.layers import Input, Dropout, Flatten, Conv2D, MaxPooling2D, Dense, Activation, GaussianNoise
 from keras.optimizers import RMSprop
 from keras.callbacks import ModelCheckpoint, Callback, EarlyStopping
 from keras.utils import np_utils
+from keras import regularizers
 from sklearn.model_selection import train_test_split
 from keras import backend as K
 import keras.layers.convolutional as conv
@@ -44,7 +45,7 @@ def prep_data_int(images):
     for i, image_file in enumerate(images):
         image = read_image(image_file)
         data[i] = image
-        if i % 1000 == 0: print('Processed {} of {}'.format(i, count))
+        if (i+1) % 1000 == 0: print('Processed {} of {}'.format(i+1, count))
 
     return data
 
@@ -88,30 +89,30 @@ def catdog():
     model = Sequential()
 
     #This 3 Layers for 128x128
-    model.add(Convolution2D(16, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
-    # model.add(GaussianNoise(0.2))
-    model.add(Convolution2D(16, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(16, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(16, 3, 3, border_mode='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
-    #model.add(GaussianNoise(0.2))
-    model.add(Convolution2D(32, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(32, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(32, 3, 3, border_mode='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Convolution2D(64, 3, 3, border_mode='same', activation='relu'))
-    #model.add(GaussianNoise(0.1))
-    model.add(Convolution2D(64, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Convolution2D(128, 3, 3, border_mode='same', activation='relu'))
-    #model.add(GaussianNoise(0.1))
-    model.add(Convolution2D(128, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
-    #model.add(GaussianNoise(0.1))
-    model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
-    model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     #model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
@@ -120,13 +121,13 @@ def catdog():
     #model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Flatten())
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.001)))
     model.add(Dropout(0.5))
 
-    model.add(Dense(512, activation='relu'))
+    model.add(Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.001)))
     model.add(Dropout(0.5))
 
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.001)))
     model.add(Dropout(0.5))
 
     #model.add(core.Dense(nb_classes, activation="softmax"))
@@ -157,7 +158,7 @@ class LossHistory(Callback):
         self.val_losses.append(logs.get('val_loss'))
 
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=4, verbose=1, mode='auto')
+early_stopping = EarlyStopping(monitor='val_loss', patience=3, verbose=1, mode='auto')
 
 class PrintInfo(Callback):
     def on_batch_end(self, batch, logs):
@@ -209,7 +210,7 @@ def generator_data(input, targets, num_steps):
 #history = run_catdog()
 history = LossHistory()
 model.fit_generator(generator=generator_data(X_train, Y_train, steps_per_epoch_train),
-                    steps_per_epoch=steps_per_epoch_train, epochs=nb_epoch, verbose=1, callbacks=[history],
+                    steps_per_epoch=steps_per_epoch_train, epochs=nb_epoch, verbose=1, callbacks=[history, early_stopping],
                     validation_data=generator_data(X_validation, Y_validation,steps_per_epoch_val),
                     validation_steps=steps_per_epoch_val)
 
