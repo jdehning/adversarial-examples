@@ -28,7 +28,7 @@ def open_data_int(beg = 0, end = None):
     train_dogs = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'dog' in i][beg:end]
     train_cats = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'cat' in i][beg:end]
     images = train_dogs + train_cats
-    data_Y = np.array([1 for _ in range(len(train_dogs))] + [0 for _ in range(len(train_cats))])
+    data_Y = np.array([[1,0] for _ in range(len(train_dogs))] + [[0,1] for _ in range(len(train_cats))])
     data_X = prep_data_int(images)
     del images
     return data_X, data_Y
@@ -85,7 +85,7 @@ def show_cats_and_dogs(idx):
 #objective = 'binary_crossentropy'
 
 
-def catdog():
+def catdog4():
     model = Sequential()
 
     #This 3 Layers for 128x128
@@ -139,8 +139,230 @@ def catdog():
     model.summary()
     return model
 
+def catdog5():
+    model = Sequential()
 
-model = catdog()
+    #This 3 Layers for 128x128
+    model.add(Conv2D(16, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(16, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(32, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(32, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    #model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Flatten())
+    model.add(Dense(256, activation='relu'))#, kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    model.add(Dropout(0.5))
+
+    #model.add(Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    #model.add(Dropout(0.5))
+
+    model.add(Dense(256, activation='relu'))#, kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    model.add(Dropout(0.5))
+
+    #model.add(core.Dense(nb_classes, activation="softmax"))
+    model.add(Dense(2, activation="softmax"))#, kernel_initializer='zeros'))
+
+    model.compile(loss=keras.losses.categorical_crossentropy,
+        optimizer = keras.optimizers.Adam(lr=0.0001),#, decay=3e-4),
+        metrics = ['accuracy'])
+    model.summary()
+    return model
+
+def catdog6():
+    model = Sequential()
+
+    #This 3 Layers for 128x128
+    model.add(Conv2D(8, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(8, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(16, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(16, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(32, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(32, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    #model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    #model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(Convolution2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Flatten())
+    model.add(Dense(128, activation='relu'))#, kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    model.add(Dropout(0.5))
+
+    #model.add(Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    #model.add(Dropout(0.5))
+
+    model.add(Dense(128, activation='relu'))#, kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    model.add(Dropout(0.5))
+
+    #model.add(core.Dense(nb_classes, activation="softmax"))
+    model.add(Dense(2, activation="softmax"))#, kernel_initializer='zeros'))
+
+    model.compile(loss=keras.losses.categorical_crossentropy,
+        optimizer = keras.optimizers.Adam(lr=0.0001),#, decay=3e-4),
+        metrics = ['accuracy'])
+    model.summary()
+    return model
+
+def catdog7():
+    model = Sequential()
+
+    #This 3 Layers for 128x128
+    model.add(Conv2D(16, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(16, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(32, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(32, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Flatten())
+    model.add(Dense(256, activation='relu'))#, kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    model.add(Dropout(0.5))
+
+    #model.add(Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    #model.add(Dropout(0.5))
+
+    model.add(Dense(256, activation='relu'))#, kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    model.add(Dropout(0.5))
+
+    #model.add(core.Dense(nb_classes, activation="softmax"))
+    model.add(Dense(2, activation="softmax"))#, kernel_initializer='zeros'))
+
+    model.compile(loss=keras.losses.categorical_crossentropy,
+        optimizer = keras.optimizers.Adam(lr=0.0001),#, decay=3e-4),
+        metrics = ['accuracy'])
+    model.summary()
+    return model
+
+def catdog8():
+    model = Sequential()
+
+    #This 3 Layers for 128x128
+    model.add(Conv2D(32, 3, 3, border_mode='same', input_shape=(ROWS, COLS, 3), activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(32, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(64, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(128, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    #model.add(GaussianNoise(0.02))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(Conv2D(256, 3, 3, border_mode='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Flatten())
+    model.add(Dense(256, activation='relu'))#, kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    model.add(Dropout(0.5))
+
+    #model.add(Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    #model.add(Dropout(0.5))
+
+    model.add(Dense(256, activation='relu'))#, kernel_regularizer=regularizers.l2(0.01),
+                    #bias_regularizer=regularizers.l2(0.01)))
+    model.add(Dropout(0.5))
+
+    #model.add(core.Dense(nb_classes, activation="softmax"))
+    model.add(Dense(2, activation="softmax"))#, kernel_initializer='zeros'))
+
+    model.compile(loss=keras.losses.categorical_crossentropy,
+        optimizer = keras.optimizers.Adam(lr=0.0001),#, decay=3e-4),
+        metrics = ['accuracy'])
+    model.summary()
+    return model
+
+model = catdog8()
 #model = create_model_kaggle()
 
 nb_epoch = 50
@@ -214,8 +436,8 @@ model.fit_generator(generator=generator_data(X_train, Y_train, steps_per_epoch_t
                     validation_data=generator_data(X_validation, Y_validation,steps_per_epoch_val),
                     validation_steps=steps_per_epoch_val)
 
-
-model.save("keras_model_cat_dogs4")
+model_num = 8
+model.save("keras_model_cat_dogs{}".format(model_num))
 
 loss = history.losses
 val_loss = history.val_losses
@@ -227,6 +449,7 @@ plt.plot(loss, 'blue', label='Training Loss')
 plt.plot(val_loss, label = "Validation Loss")
 plt.xticks(range(0,nb_epoch)[0::2])
 plt.legend()
+plt.savefig("./figures/cats_dogs_model{}.png".format(model_num))
 plt.show()
 
 #test_X, test_Y = open_data(11500, None)
