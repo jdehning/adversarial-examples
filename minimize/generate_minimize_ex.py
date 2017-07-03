@@ -14,6 +14,7 @@ from plot_image_noise import show_img_noise
 #from generate_adv_ex import get_gradient
 import scipy.optimize, scipy.stats
 import time
+import datetime
 
 #instanciate the session at the loading of this module. Could perhaps lead to problems later? But instanciating the
 #session in a function doesn't work for unknown reasons.
@@ -119,58 +120,94 @@ def create_loss_func_for_minimize(model):
 def run_batch_minimize(model, images, truePrediction):
     loss_func = create_loss_func_for_minimize(model)
     i = 0
-    c = 1.
+    #c = 10.
     rs = []
     imgShape = np.shape(images[0])
-    def cb(a):
-        print ("a")
+
+    ones = np.ones(imgShape)
+    zeros = np.zeros(imgShape)
+
     def to_minimize(r):
         if (np.shape(r) != imgShape):
             r = np.reshape(r, imgShape)
         #print("c")
-        temp = minimize_func(r, c, image, np.append(truePrediction[i][shuffle:],truePrediction[i][:shuffle]), loss_func)
-        print(temp)
-        return temp
+        #temp = minimize_func(r, c, image, np.append(truePrediction[i][shuffle:],truePrediction[i][:shuffle]), loss_func)
+        #print(temp)
+        #return temp
+        return minimize_func(r, c, image, np.append(truePrediction[i][shuffle:],truePrediction[i][:shuffle]), loss_func)
+
     def grad(r):
         shapeOld = np.shape(r)
         if (np.shape(r) != imgShape):
             r = np.reshape(r, imgShape)
         return np.reshape(grad_min_func(r, c, image, np.append(truePrediction[i][shuffle:],truePrediction[i][:shuffle]), model), shapeOld)
 
+    def constrain(r):
+        if (np.shape(r) != imgShape):
+            r = np.reshape(r, imgShape)
+        #print(np.max(r + image - ones, zeros))
+        temp = vec_abs(np.maximum(r + image - ones, zeros))
+        if (temp > 0):
+            return temp
+        temp = vec_abs(-np.minimum(r + image, zeros))
+        if (temp > 0):
+            return temp
+        return 0
+
     #create bounds array
     bounds = np.zeros((images[0].size, 2), dtype="float64")
+    bounds[:,0] = -1.0
     bounds[:,1] = 1.0
 
 
     curR = np.ones(imgShape)*10
+    tempR = np.ones(imgShape)
+    minC = 100
+
+    maxIAll = np.shape(images)[0] * 15 * 10.
+    iAll = 0
+
     for image in images:
-        for shuffle in np.arange(1, 10):
-            #print (to_minimize(np.array(np.random.rand(*imgShape), dtype="float32")))
-            #print(grad(np.array(np.random.rand(*imgShape)/10., dtype="float32")))
-            tempR = np.reshape(scipy.optimize.minimize(to_minimize, jac=grad, 
-               #x0=np.zeros(imgShape),
-               x0=np.random.rand(*imgShape)*5, bounds=bounds,
-               method="L-BFGS-B", callback=cb, tol=0.001, options={"maxiter": 20,
-               "eps":0.001} ).x, imgShape) 
-            prediction = np.argmax(model.predict(np.array([image + tempR], dtype="float64"), batch_size=1, verbose=0))
-            print(vec_abs(tempR) < vec_abs(curR))
-            print(prediction != np.argmax(truePrediction))
-            print(np.argmax(prediction))
-            print(np.argmax(truePrediction))
-            if (vec_abs(tempR) < vec_abs(curR) and prediction != np.argmax(truePrediction) ):
-                print("overWrite")
-                curR = tempR
+        for c in 1.5-np.arange(0, 1.5, 0.5):
+            for shuffle in np.arange(1, 10):
+                #print (to_minimize(np.array(np.random.rand(*imgShape), dtype="float32")))
+                #print(grad(np.array(np.random.rand(*imgShape)/10., dtype="float32")))
+                tempR = np.reshape(scipy.optimize.minimize(to_minimize, jac=grad, 
+                   #x0=np.zeros(imgShape),
+                   x0=np.random.rand(*imgShape)*5, bounds=bounds,
+                   constraints={"type": "eq", "fun": constrain},
+                   method="SLSQP", tol=0.001, options={"maxiter": 20,
+                   "eps":0.001} ).x, imgShape) 
+                prediction = np.argmax(model.predict(np.array([image + tempR], dtype="float64"), batch_size=1, verbose=0))
+                #print("Percentage done: " + str(iAll/maxIAll) + " c: " + str(c) + "to predict: " + str((truePrediction - shuffle)%10) )
+                #print(vec_abs(tempR) < vec_abs(curR))
+                #print(prediction != np.argmax(truePrediction))
+                #print(np.argmax(prediction))
+                #print(np.argmax(truePrediction))
+                if (vec_abs(tempR) < vec_abs(curR) and prediction != np.argmax(truePrediction) ):
+                    print("overWrite")
+                    curR = tempR
+                    minC = c
+                iAll += 1
         rs.append(curR)
         i += 1
-    return np.array(rs)
+
+    print("min c: " + str(minC))
+
+    return (np.array(rs), minC)
 
 model = load_model('../keras_model1')
 dataX, dataY = read_data_mnist()
 #print (dataY[7])
 #print(grad_min_func(dataX[3], 5, dataX[0], dataY[7], model))
 #rint (create_loss_func_for_minimize(model)(np.array(np.random.rand(28,28,1), dtype="float32"), dataY[1]))
-rs = run_batch_minimize(model, np.array([dataX[1]]), np.array([dataY[1]]))
-predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float64"), batch_size=1, verbose=0))
+rs, minC = run_batch_minimize(model, np.array(dataX[0:2]), np.array(dataY[0:2]))
+np.save(str(datetime.datetime.now().today()) + "_c" + str(minC), rs)
+predicImg = np.argmax(model.predict(np.array([dataX[0]], dtype="float64"), batch_size=1, verbose=0))
 predicNoise = np.argmax(model.predict(np.array([rs[0]], dtype="float64"), batch_size=1, verbose=0))
-predicImgNoise = np.argmax(model.predict(np.array([dataX[1] + rs[0]], dtype="float64"), batch_size=1, verbose=0))
-show_img_noise(dataX[1], rs[0], predicImg, predicNoise, predicImgNoise)
+predicImgNoise = np.argmax(model.predict(np.array([dataX[0] + rs[0]], dtype="float64"), batch_size=1, verbose=0))
+show_img_noise(dataX[0], rs[0], predicImg, predicNoise, predicImgNoise)
+predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float64"), batch_size=1, verbose=0))
+predicNoise = np.argmax(model.predict(np.array([rs[1]], dtype="float64"), batch_size=1, verbose=0))
+predicImgNoise = np.argmax(model.predict(np.array([dataX[1] + rs[1]], dtype="float64"), batch_size=1, verbose=0))
+show_img_noise(dataX[1], rs[1], predicImg, predicNoise, predicImgNoise)
