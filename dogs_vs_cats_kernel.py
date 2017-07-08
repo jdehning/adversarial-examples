@@ -8,7 +8,7 @@ import seaborn as sns
 
 import keras
 import keras.layers.core as core
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Input, Dropout, Flatten, Conv2D, MaxPooling2D, Dense, Activation, GaussianNoise
 from keras.optimizers import RMSprop
 from keras.callbacks import ModelCheckpoint, Callback, EarlyStopping
@@ -362,7 +362,7 @@ def catdog8():
     model.summary()
     return model
 
-def catdog9():
+def catdog9(): #11
     model = Sequential()
 
     #This 3 Layers for 128x128
@@ -466,10 +466,10 @@ def catdog10():
     model.summary()
     return model
 
-model = catdog9()
-#model = create_model_kaggle()
+#model = catdog9()
+model = load_model("keras_model_cat_dogs9")
 
-nb_epoch = 50
+nb_epoch = 100
 batch_size = 128
 
 
@@ -535,14 +535,14 @@ def generator_data(input, targets, num_steps):
 
 #history = run_catdog()
 history = LossHistory()
-filepath="models_cat_dogs/keras_model_cat_dogs9-{epoch:02d}-{val_acc:.2f}"
+filepath="models_cat_dogs/keras_model_cat_dogs11-{epoch:02d}-{val_acc:.3f}"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc')
 model.fit_generator(generator=generator_data(X_train, Y_train, steps_per_epoch_train),
-                    steps_per_epoch=steps_per_epoch_train, epochs=nb_epoch, verbose=1, callbacks=[history, early_stopping, checkpoint],
+                    steps_per_epoch=steps_per_epoch_train, epochs=nb_epoch, verbose=1, callbacks=[history, checkpoint],
                     validation_data=generator_data(X_validation, Y_validation,steps_per_epoch_val),
                     validation_steps=steps_per_epoch_val)
 
-model_num = 9
+model_num = 11
 model.save("keras_model_cat_dogs{}".format(model_num))
 
 loss = history.losses
