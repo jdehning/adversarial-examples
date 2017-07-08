@@ -204,13 +204,12 @@ def run_minimizer(model, images, truePredictions, num_to_predict = 3):
         prediction_im = np.argmax(truePrediction)
         show_img_noise(image, tempR, predictImage=prediction_im, predictAdded=prediction_adv_ex)
 
-def run_minimizer_inv(model, images, truePredictions):
+def run_minimizer_inv_generator(model, images, truePredictions, c = 1e2, plot=False):
     inv_loss_func = create_inv_loss_func_for_minimize(model)
-    c = 1e2 #put c = 1e3 for dogs vs cats
+    c = c #put c = 1e3 for dogs vs cats
     d = 1
     p = 2
     imgShape = np.shape(images[0])
-
     for image, truePrediction in zip(images, truePredictions):
 
         bounds = np.zeros((images[0].size, 2), dtype="float64")
@@ -239,21 +238,38 @@ def run_minimizer_inv(model, images, truePredictions):
                 grad_norm = c/r.size*r*np.abs(r)**(p-2)/(norm(r)/c)**(p-1)
             print("grad: {:.7f}, {:.7f}".format(np.std(gradient), np.std(grad_norm)))
             return (grad_norm + gradient).flatten()
+        final_res_optimize = None
+        for factor_x0 in [0.05, 0.1, 0.3]:
+            x0 = (np.random.rand(*imgShape)-image)*factor_x0
+            res_optimize = scipy.optimize.minimize(to_minimize, jac=grad,
+                                            # x0=np.zeros(imgShape),
+                                            x0=x0, bounds=bounds, #method="TNC",
+                                            method="L-BFGS-B",
+                                            tol=0.001, options={"maxiter": 100, "eps": 0.01})
+            if final_res_optimize is None or final_res_optimize.fun > res_optimize:
+                final_res_optimize = res_optimize
 
-        res_optimize = scipy.optimize.minimize(to_minimize, jac=grad,
-                                        # x0=np.zeros(imgShape),
-                                        x0=x0, bounds=bounds, #method="TNC",
-                                        method="L-BFGS-B",
-                                        tol=0.001, options={"maxiter": 100, "eps": 0.01})
-        print("Number of iterations: {}, {}".format(res_optimize.nit, res_optimize.nfev))
-        tempR = res_optimize.x.reshape(imgShape)
-        result_image_and_r = model.predict(np.array([image + tempR], dtype="float32"), batch_size=1, verbose=0)
-        prediction_adv_ex = np.argmax(result_image_and_r)
 
-        print("std r: {:.5f}, num predicted {}, probability: {:.1f}%".format(np.std(tempR), prediction_adv_ex,
-                                                                              np.max(result_image_and_r)*100))
-        prediction_im = np.argmax(truePrediction)
-        show_img_noise(image, tempR, predictImage=prediction_im, predictAdded=prediction_adv_ex)
+        noise = res_optimize.x.reshape(imgShape)
+        result_image = model.predict(np.array([image], dtype="float32"), batch_size=1, verbose=0)
+        result_adv_ex = model.predict(np.array([image + noise], dtype="float32"), batch_size=1, verbose=0)
+        prediction_adv_ex = np.argmax(result_adv_ex)
+        image_target = np.argmax(truePrediction)
+        prediction_image = np.argmax(result_image)
+        if plot:
+            print("Number of iterations: {}, {}".format(res_optimize.nit, res_optimize.nfev))
+            print("std r: {:.5f}, num predicted {}, probability: {:.1f}%".format(np.std(noise), prediction_adv_ex,
+                                                                                 np.max(result_adv_ex) * 100))
+            show_img_noise(image, noise, predictImage=prediction_image, predictAdded=prediction_adv_ex)
+        return_dic = {"image_target": image_target,
+                      "result_image": result_image,
+                      "prediction_image": prediction_image,
+                      "result_adv_example": result_adv_ex,
+                      "prediction_adv_example": prediction_adv_ex,
+                      "noise": noise,
+                      "minimize_result": final_res_optimize.fun,
+                      "std_noise": np.std(noise)}
+        yield return_dic
 
 
 
@@ -266,7 +282,7 @@ if __name__ == "__main__":
     #model = load_model("../keras_model_cat_dogs8")
     #dataX, dataY = open_data_dogs_cat_float(end = 20, rows=128, cols=128)
     for i in range(0,10):
-        rs = run_minimizer_inv(model, np.array([dataX[i]]), np.array([dataY[i]]))
+        rs = run_minimizer_inv_generator(model, np.array([dataX[i]]), np.array([dataY[i]]), plot=True)
     """
     predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float64"), batch_size=1, verbose=0))
     predicNoise = np.argmax(model.predict(np.array([rs[0]], dtype="float64"), batch_size=1, verbose=0))
