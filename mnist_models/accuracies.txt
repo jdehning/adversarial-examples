@@ -1,0 +1,5 @@
+bestes Modell		Accuaracy für Testdaten		Loss für Testdaten
+
+mnist_model1b		0.999761904762			0.00112326932627
+mnist_model2		0.997142857143			0.0103871355148
+mnist_model3		0.997619047619			0.0111788385424
