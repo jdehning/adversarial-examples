@@ -5,7 +5,6 @@ from keras import losses
 import pandas as pd
 import numpy as np
 from tqdm import tqdm #tqdm is a library to display a progress bar
-import matplotlib.pyplot as plt
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -13,15 +12,14 @@ sys.path.insert(0,parentdir)
 from plot_image_noise import show_img_noise
 #from generate_adv_ex import get_gradient
 import scipy.optimize, scipy.stats
-import time
 
 #instanciate the session at the loading of this module. Could perhaps lead to problems later? But instanciating the
 #session in a function doesn't work for unknown reasons.
-sess = tf.Session()
+
 from keras import backend as K
-K.set_session(sess)
 
 def get_gradient(model, images, results):
+    sess = K.get_session()
     #images and results need to be a list or array of images and results
 
     images = np.array(images, dtype="float32")
@@ -46,6 +44,7 @@ def get_inv_gradient(model, images, results):
     """
     returns the gradient of 1/(1-x0) where x0 is the result of the softmax from results
     """
+    sess = K.get_session()
     images = np.array(images, dtype="float32")
     assert len(images.shape) == 4
     assert len(results.shape) == 2
@@ -93,8 +92,7 @@ def read_data_mnist():
     data_Y = keras.utils.to_categorical(train[:, 0])
     return data_X, data_Y
 
-def open_data_dogs_cat_float(beg = 0, end = None, rows=128, cols=128):
-    TRAIN_DIR = '../data/dog_vs_cats/train/'
+def open_data_dogs_cat_float(beg = 0, end = None, rows=128, cols=128, TRAIN_DIR = '../data/dog_vs_cats/train/'):
     train_dogs = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'dog' in i][beg:end]
     train_cats = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'cat' in i][beg:end]
     images = train_dogs + train_cats
@@ -134,6 +132,7 @@ def create_loss_func_for_minimize(model):
         image and the target prediction and returns an numpy array containing the
         error.
     """
+    sess = K.get_session()
     loss = model.loss
     if (type(loss) is str):
         loss = getattr(losses, loss)
@@ -204,85 +203,88 @@ def run_minimizer(model, images, truePredictions, num_to_predict = 3):
         prediction_im = np.argmax(truePrediction)
         show_img_noise(image, tempR, predictImage=prediction_im, predictAdded=prediction_adv_ex)
 
-def run_minimizer_inv_generator(model, images, truePredictions, c = 1e2, plot=False):
+def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False):
     inv_loss_func = create_inv_loss_func_for_minimize(model)
     c = c #put c = 1e3 for dogs vs cats
     d = 1
     p = 2
-    imgShape = np.shape(images[0])
-    for image, truePrediction in zip(images, truePredictions):
+    imgShape = np.shape(image)
 
-        bounds = np.zeros((images[0].size, 2), dtype="float64")
-        bounds[:, 1] = 1.0
-        bounds[:, 0] -= image.flatten()
-        bounds[:, 1] -= image.flatten()
-        x0 = (np.random.rand(*imgShape)-image)*0.1
-        def norm(r):
-            return c*(1/r.size*np.sum(np.abs(r)**p))**(1./p)
-        def to_minimize(r):
-            r = r.reshape(imgShape)
-            res_loss_func = d*inv_loss_func(image + r, truePrediction)
-            if res_loss_func == np.inf:
-                res_loss_func = 1e9
-            res_norm = norm(r)
-            val = res_norm + res_loss_func
-            print("min: {:.3f}, {:.3f}, {:.3f}".format(val, res_loss_func, res_norm))
-            return val
-
-        def grad(r):
-            r = r.reshape(imgShape)
-            gradient = d*get_inv_gradient(model, np.array([image + r]), np.array([truePrediction]))[0].astype("float64")
-            if p == 1:
-                grad_norm =c/r.size*np.sign(r)/(norm(r)/c)
-            else:
-                grad_norm = c/r.size*r*np.abs(r)**(p-2)/(norm(r)/c)**(p-1)
-            print("grad: {:.7f}, {:.7f}".format(np.std(gradient), np.std(grad_norm)))
-            return (grad_norm + gradient).flatten()
-        final_res_optimize = None
-        for factor_x0 in [0.05, 0.1, 0.3]:
-            x0 = (np.random.rand(*imgShape)-image)*factor_x0
-            res_optimize = scipy.optimize.minimize(to_minimize, jac=grad,
-                                            # x0=np.zeros(imgShape),
-                                            x0=x0, bounds=bounds, #method="TNC",
-                                            method="L-BFGS-B",
-                                            tol=0.001, options={"maxiter": 100, "eps": 0.01})
-            if final_res_optimize is None or final_res_optimize.fun > res_optimize:
-                final_res_optimize = res_optimize
-
-
-        noise = res_optimize.x.reshape(imgShape)
-        result_image = model.predict(np.array([image], dtype="float32"), batch_size=1, verbose=0)
-        result_adv_ex = model.predict(np.array([image + noise], dtype="float32"), batch_size=1, verbose=0)
-        prediction_adv_ex = np.argmax(result_adv_ex)
-        image_target = np.argmax(truePrediction)
-        prediction_image = np.argmax(result_image)
+    bounds = np.zeros((image.size, 2), dtype="float64")
+    bounds[:, 1] = 1.0
+    bounds[:, 0] -= image.flatten()
+    bounds[:, 1] -= image.flatten()
+    x0 = (np.random.rand(*imgShape)-image)*0.1
+    def norm(r):
+        return c*(1/r.size*np.sum(np.abs(r)**p))**(1./p)
+    def to_minimize(r):
+        r = r.reshape(imgShape)
+        res_loss_func = d*inv_loss_func(image + r, truePrediction)
+        if res_loss_func == np.inf:
+            res_loss_func = 1e9
+        res_norm = norm(r)
+        val = res_norm + res_loss_func
         if plot:
-            print("Number of iterations: {}, {}".format(res_optimize.nit, res_optimize.nfev))
-            print("std r: {:.5f}, num predicted {}, probability: {:.1f}%".format(np.std(noise), prediction_adv_ex,
-                                                                                 np.max(result_adv_ex) * 100))
-            show_img_noise(image, noise, predictImage=prediction_image, predictAdded=prediction_adv_ex)
-        return_dic = {"image_target": image_target,
-                      "result_image": result_image,
-                      "prediction_image": prediction_image,
-                      "result_adv_example": result_adv_ex,
-                      "prediction_adv_example": prediction_adv_ex,
-                      "noise": noise,
-                      "minimize_result": final_res_optimize.fun,
-                      "std_noise": np.std(noise)}
-        yield return_dic
+            print("min: {:.3f}, {:.3f}, {:.3f}".format(val, res_loss_func, res_norm))
+        return val
+
+    def grad(r):
+        r = r.reshape(imgShape)
+        gradient = d*get_inv_gradient(model, np.array([image + r]), np.array([truePrediction]))[0].astype("float64")
+        if p == 1:
+            grad_norm =c/r.size*np.sign(r)/(norm(r)/c)
+        else:
+            grad_norm = c/r.size*r*np.abs(r)**(p-2)/(norm(r)/c)**(p-1)
+        if plot:
+            print("grad: {:.7f}, {:.7f}".format(np.std(gradient), np.std(grad_norm)))
+        return (grad_norm + gradient).flatten()
+    final_res_optimize = None
+    for factor_x0 in [0.1]:
+        x0 = (np.random.rand(*imgShape)-image)*factor_x0
+        res_optimize = scipy.optimize.minimize(to_minimize, jac=grad,
+                                        # x0=np.zeros(imgShape),
+                                        x0=x0, bounds=bounds, #method="TNC",
+                                        method="L-BFGS-B",
+                                        tol=0.001, options={"maxiter": 100, "eps": 0.01})
+        if final_res_optimize is None or final_res_optimize.fun > res_optimize.fun:
+            final_res_optimize = res_optimize
 
 
+    noise = final_res_optimize.x.reshape(imgShape)
+    result_image = model.predict(np.array([image], dtype="float32"), batch_size=1, verbose=0)
+    result_adv_ex = model.predict(np.array([image + noise], dtype="float32"), batch_size=1, verbose=0)
+    prediction_adv_ex = np.argmax(result_adv_ex)
+    image_target = np.argmax(truePrediction)
+    prediction_image = np.argmax(result_image)
+    if image_target == prediction_image and (not prediction_adv_ex == prediction_image):
+        success = True
+    else:
+        success = False
+    if plot:
+        print("Number of iterations: {}, {}".format(final_res_optimize.nit, final_res_optimize.nfev))
+        print("std r: {:.5f}, num predicted {}, probability: {:.1f}%".format(np.std(noise), prediction_adv_ex,
+                                                                             np.max(result_adv_ex) * 100))
+        show_img_noise(image, noise, predictImage=prediction_image, predictAdded=prediction_adv_ex)
+    return_dic = {"image_target": image_target,
+                  "result_image": result_image,
+                  "prediction_image": prediction_image,
+                  "result_adv_example": result_adv_ex,
+                  "prediction_adv_example": prediction_adv_ex,
+                  "minimize_result": final_res_optimize.fun,
+                  "std_noise": np.std(noise),
+                  "success": success}
+    return return_dic
 
 
 if __name__ == "__main__":
 
-    model = load_model('../keras_model1')
-    dataX, dataY = read_data_mnist()
+    #model = load_model('../keras_model1')
+    #dataX, dataY = read_data_mnist()
 
-    #model = load_model("../keras_model_cat_dogs8")
-    #dataX, dataY = open_data_dogs_cat_float(end = 20, rows=128, cols=128)
+    model = load_model("../keras_model_cat_dogs8")
+    dataX, dataY = open_data_dogs_cat_float(end = 20, rows=128, cols=128)
     for i in range(0,10):
-        rs = run_minimizer_inv_generator(model, np.array([dataX[i]]), np.array([dataY[i]]), plot=True)
+        rs = run_minimizer_inv(model, dataX[i], dataY[i], plot=True)
     """
     predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float64"), batch_size=1, verbose=0))
     predicNoise = np.argmax(model.predict(np.array([rs[0]], dtype="float64"), batch_size=1, verbose=0))
