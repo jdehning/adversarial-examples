@@ -1,7 +1,9 @@
 
-from multiprocessing import Pool
+from multiprocessing import Pool, Manager
 import numpy as np
 import pickle, os, cv2
+import matplotlib.pyplot as plt
+import copy
 """
 def compare_cats_dogs_minimizer():
     model_nums = [8,9,10]
@@ -50,32 +52,48 @@ def prep_data_cat_data_float(images, rows=128, cols=128):
 
     return data
 
+def get_last_filename_cat_dogs(model_num):
+    potential_filenames = []
+    for filename in os.listdir("./"):
+        if filename.find("adv_exampled_cats_dogs_model{}".format(model_num)) >= 0:
+            potential_filenames.append(filename)
+    potential_filenames.sort(key=lambda x: int(x.split("_")[-1]))
+    return potential_filenames[-1]
+
 def compare_cats_dogs_minimizer(args):
     model_num, dataX, dataY = args
+    res_arr = pickle.load(open(get_last_filename_cat_dogs(model_num), "rb"))
+    index = len(res_arr)
+    if index >= 1000:
+        return 1
+
     from minimize.generate_minimize_ex import run_minimizer_inv
     from keras import backend as K
     import tensorflow as tf
     import keras
-    res_arr = []
-    for i, (image,target) in enumerate((zip(dataX, dataY))):
+
+    """
+    data_X_local = copy.deepcopy()
+    data_Y_local = copy.deepcopy(dataY[index, index+10])
+    del dataX, dataY
+    """
+    for image,target in zip(dataX[index: index+10], dataY[index: index+10]):
         K.clear_session()
-        #sess = K.get_session()
-        #sess.close()
         tf.reset_default_graph()
         K.set_session(tf.Session())
         model = keras.models.load_model("keras_model_cat_dogs{}".format(model_num))
-        print("Hi")
         res_dic = run_minimizer_inv(model, image, target, c = 1e3)
-        res_dic["index"] = i
+        res_dic["index"] = index
         res_arr.append(res_dic)
-        print(model_num,i, "{:.4f}, {:.3f}".format(res_dic["std_noise"], res_dic["minimize_result"]))
-        if i%4 == 0:
-            pickle.dump(res_arr, open("adv_exampled_cats_dogs_model{}_{}".format(model_num, i), "wb"))
-            if i >= 20:
-                os.remove("adv_exampled_cats_dogs_model{}_{}".format(model_num, i-20))
+        print(model_num, index, "{:.4f}, {:.3f}".format(res_dic["std_noise"], res_dic["minimize_result"]))
+        index += 1
+    pickle.dump(res_arr, open("adv_exampled_cats_dogs_model{}_{}".format(model_num, index), "wb"))
+    os.remove("adv_exampled_cats_dogs_model{}_{}".format(model_num, index - 10))
 
-def compare_dics(filenames):
-    res_arrays = [pickle.load(open(file, "rb")) for file in filenames]
+
+def compare_dics():
+    model_numbers = [8,9,10]
+    res_arrays = [pickle.load(open(get_last_filename_cat_dogs(model_number), "rb")) for model_number in model_numbers]
     plot_arrays = [[] for _ in range(len(res_arrays))]
     for i_image in range(len(res_arrays[2])):
         save = True
@@ -90,10 +108,56 @@ def compare_dics(filenames):
             for i, val in enumerate(values):
                 plot_arrays[i].append(val)
 
+    min = 1.
+    max = 8.
+    colors = ["r", "b", "g"]
+    labels = ["average depth", "shallow", "deep"]
+    f, ax = plt.subplots()
+    for i, plot_array in enumerate(plot_arrays):
+        bw = (max - min) / np.sqrt(len(plot_array))
+        print(plot_array)
+        plot_kernel_distribution(plot_array, ax, label=labels[i], bw=bw,
+                                 min=min, max=max, color = colors[i])
+    plt.xlim(min, max)
+    plt.xlabel("Minimizer value")
+    plt.tight_layout()
+    plt.show()
 
-
+def plot_kernel_distribution(x, ax, min, max, bw, label = "", color = "b"):
+    try:
+        from statsmodels.nonparametric.kernel_density import KDEMultivariate
+        import_succeded = True
+    except ImportError:
+        import_succeded = False
+    x = np.array(x)
+    x = x[~np.isnan(x)]
+    bw = bw * np.ones_like(x)
+    bars = [min]
+    for width in bw:
+        bars += [bars[-1] + width * 1.2]
+    ax.hist(x, bars, normed=1, facecolor=color, alpha=0.2)
+    if import_succeded: #plot a kernel distribution
+        print(x.shape)
+        print(bw)
+        kde = KDEMultivariate(x, var_type="c")
+        x_grid = np.linspace(min, max, 1000)
+        print(x_grid.shape)
+        pdf = np.array(kde.pdf(x_grid))
+        ax.plot(x_grid, pdf, linewidth=3, alpha=0.9, label='{}, {} pts'.format(label, len(x)), color = color)
+    ax.legend(loc='upper right')
 
 if __name__ == "__main__":
+    """
     p = Pool(3)
+    manager = Manager()
     dataX, dataY = open_data_dogs_cat_float(end=1000, rows=128, cols=128, TRAIN_DIR="./data/dog_vs_cats/train/")
-    p.map(compare_cats_dogs_minimizer, [(i, dataX, dataY) for i in [8,9,10]])
+    dataX = manager.list(dataX)
+    dataY = manager.list(dataY)
+    for _ in range(100):
+        res = p.map_async(compare_cats_dogs_minimizer, [(i, dataX, dataY) for i in [8,9,10]])
+    p.close()
+    print("closed")
+    p.join()
+    print("joined")
+    """
+    compare_dics()
