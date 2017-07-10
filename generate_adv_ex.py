@@ -118,6 +118,7 @@ def return_accuracy_of_model_for_given_noise_added(model, images, truePrediction
                          "prediction_adv_example": prediction_adv_ex,
                          "constant": ratio_of_noise_added,
                          "std_noise": np.std(noise),
+                         "mean_noise": np.mean(noise),
                          "index": indicies[i],
                          "success": image_target == prediction_image and image_target != prediction_adv_ex})
 
@@ -220,18 +221,26 @@ def run_gradient(model, image, truePrediction, num_images=1000):
 #random_grad = np.random.randint(0,2,(1,28,28,1))*2-1
 
 if __name__ == "__main__":
-    model = load_model('keras_model1')
     dataX, dataY = read_data_mnist()
     factor_noise = 0.2
-    amountImgs = 4096
+    amountImgs = 1024
+
+    modelName = "3"
+
+    saveName = "grad_results/mnist_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
+    modelName = "./mnist_models/mnist_model" + modelName
+
     print("Generating adversarial examples using the gadient method using a factor of" + str(factor_noise))
+    print("processing model: " + modelName)
+    model = load_model(modelName)
     results = return_accuracy_of_model_for_given_noise_added(model, np.array(dataX[:amountImgs]), np.array(dataY[:amountImgs]), np.arange(0, amountImgs), factor_noise)
     count_success = 0
     for result in results:
         if result["success"] == True:
             count_success += 1
     print("amount success: " + str(count_success/amountImgs) + "%")
-    np.save("grad_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", ""), results)
+    #print(saveName)
+    np.save(saveName, results)
     #return_accuracy_of_model_for_given_noise_added(model)
     #print(analyse_min_noise(model, 10))
 
