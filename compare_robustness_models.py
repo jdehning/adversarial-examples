@@ -123,6 +123,7 @@ def compare_dics():
     plt.tight_layout()
     plt.show()
 
+
 def plot_kernel_distribution(x, ax, min, max, bw, label = "", color = "b"):
     try:
         from statsmodels.nonparametric.kernel_density import KDEMultivariate
