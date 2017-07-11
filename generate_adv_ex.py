@@ -14,11 +14,45 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm #tqdm is a library to display a progress bar
 import scipy.optimize, scipy.stats
+import pickle, os, sys, cv2
 
 #instanciate the session at the loading of this module. Could perhaps lead to problems later? But instanciating the
 #session in a function doesn't work for unknown reasons.
 from keras import backend as K
 
+#
+# reading cats vs dogs data
+#
+
+
+def open_data_dogs_cat_float(beg = 0, end = None, rows=128, cols=128, TRAIN_DIR = './data/dog_vs_cats/train/'):
+    train_dogs = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'dog' in i][beg:end]
+    train_cats = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'cat' in i][beg:end]
+    images = train_dogs + train_cats
+    data_Y = np.array([[1,0] for _ in range(len(train_dogs))] + [[0,1] for _ in range(len(train_cats))])
+    data_X = prep_data_cat_data_float(images, rows=rows, cols=cols)
+    del images
+    return data_X, data_Y
+
+def read_image(file_path, rows, cols):
+    img = cv2.imread(file_path, cv2.IMREAD_COLOR)  # cv2.IMREAD_GRAYSCALE
+    return cv2.resize(img, (rows, cols), interpolation=cv2.INTER_CUBIC)[...,::-1]
+
+
+def prep_data_cat_data_float(images, rows=128, cols=128):
+    count = len(images)
+    data = np.ndarray((count, rows, cols, 3), dtype="float32")
+
+    for i, image_file in enumerate(images):
+        image = read_image(image_file, rows, cols)/255.
+        data[i] = image
+        if (i+1) % 1000 == 0: print('Processed {} of {}'.format(i+1, count))
+
+    return data
+
+#
+# reading mnist data
+#
 def read_data_mnist():
     train = pd.read_csv("data/train.csv").values
     data_X = train[:, 1:].reshape(train.shape[0], 28, 28, 1)
@@ -27,6 +61,9 @@ def read_data_mnist():
     data_Y = keras.utils.to_categorical(train[:, 0])
     return np.array(data_X), np.array(data_Y)
 
+#
+# creating adversarial examples using the gradient method
+#
 def get_gradient(model, images, results):
     sess = K.get_session()
     #images and results need to be a list or array of images and results
@@ -93,7 +130,7 @@ def return_accuracy_of_model_for_given_noise_added(model, images, truePrediction
 
     #calculate in batches, in order to speed up the calculations. Don't put much higher than about 1000 for the MNIST
     #dataset, as it already needs about 1.7GB ram.
-    batch_size = np.min([len_data, 1024])
+    batch_size = np.min([len_data, 128])
     total_iter = int(len_data/batch_size)
     dics = []
     for images, results in tqdm(batch_generator(images, truePredictions, batch_size=batch_size), total=total_iter):
@@ -221,29 +258,43 @@ def run_gradient(model, image, truePrediction, num_images=1000):
 #random_grad = np.random.randint(0,2,(1,28,28,1))*2-1
 
 if __name__ == "__main__":
-    dataX, dataY = read_data_mnist()
-    factor_noise = 0.2
+    if (len(sys.argv) != 3):
+        print("Usage: python3 generate_adv_ex.py factor_noise model_number")
+        sys.exit(1)
+
+    factor_noise = float(sys.argv[1])
     amountImgs = 1024
 
-    modelName = "3"
+    #dataX, dataY = read_data_mnist()
+    dataX, dataY = open_data_dogs_cat_float(beg = 0, end = amountImgs)
+    
 
-    saveName = "grad_results/mnist_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
-    modelName = "./mnist_models/mnist_model" + modelName
+    #modelName = "9" #1,2,3 for mnist, 8,9,10 for cats vs dogs
+    modelName = str(sys.argv[2])
 
-    print("Generating adversarial examples using the gadient method using a factor of" + str(factor_noise))
+    #saveName = "grad_results/mnist_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
+    #modelName = "./mnist_models/mnist_model" + modelName
+    saveName = "grad_results/cvd_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
+    modelName = "keras_model_cat_dogs" + modelName
+
+    print("Generating adversarial examples using the gadient method using a factor of " + str(factor_noise))
     print("processing model: " + modelName)
     model = load_model(modelName)
     results = return_accuracy_of_model_for_given_noise_added(model, np.array(dataX[:amountImgs]), np.array(dataY[:amountImgs]), np.arange(0, amountImgs), factor_noise)
     count_success = 0
+    count_correct_prediction = 0
     for result in results:
+        if result["image_target"] == result["prediction_image"]:
+            count_correct_prediction += 1
         if result["success"] == True:
             count_success += 1
     print("amount success: " + str(count_success/amountImgs) + "%")
+    print(count_correct_prediction/amountImgs)
     #print(saveName)
     np.save(saveName, results)
     #return_accuracy_of_model_for_given_noise_added(model)
     #print(analyse_min_noise(model, 10))
-
+    
 
 
 
