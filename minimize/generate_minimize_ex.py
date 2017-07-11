@@ -74,24 +74,6 @@ def create_inv_loss_func_for_minimize(model):
         return 1/(1.001-prediction[np.argmax(target)]+1e-6)
     return loss_func
 
-
-
-def read_data_mnist():
-    """
-    read the MNIST traning set\n
-    \n
-    returns: (dataX, dataY)\n
-    dataX: array of (28, 28, 1) arrays which are the image pixels. Each
-    pixel has an intensity in range [0,1]\n
-    dataY: classification: [1, ..., 9]\n
-    """
-    train = pd.read_csv("../data/train.csv").values
-    data_X = train[:, 1:].reshape(train.shape[0], 28, 28, 1)
-    data_X = data_X.astype("float32")
-    data_X /= 255.0
-    data_Y = keras.utils.to_categorical(train[:, 0])
-    return data_X, data_Y
-
 def open_data_dogs_cat_float(beg = 0, end = None, rows=128, cols=128, TRAIN_DIR = '../data/dog_vs_cats/train/'):
     train_dogs = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'dog' in i][beg:end]
     train_cats = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'cat' in i][beg:end]
@@ -203,7 +185,7 @@ def run_minimizer(model, images, truePredictions, num_to_predict = 3):
         prediction_im = np.argmax(truePrediction)
         show_img_noise(image, tempR, predictImage=prediction_im, predictAdded=prediction_adv_ex)
 
-def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False):
+def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False, x0_factors = [0.1]):
     inv_loss_func = create_inv_loss_func_for_minimize(model)
     c = c #put c = 1e3 for dogs vs cats
     d = 1
@@ -239,7 +221,7 @@ def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False):
             print("grad: {:.7f}, {:.7f}".format(np.std(gradient), np.std(grad_norm)))
         return (grad_norm + gradient).flatten()
     final_res_optimize = None
-    for factor_x0 in [0.1]:
+    for factor_x0 in x0_factors:
         x0 = (np.random.rand(*imgShape)-image)*factor_x0
         res_optimize = scipy.optimize.minimize(to_minimize, jac=grad,
                                         # x0=np.zeros(imgShape),

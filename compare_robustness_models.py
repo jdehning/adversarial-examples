@@ -3,7 +3,8 @@ from multiprocessing import Pool, Manager
 import numpy as np
 import pickle, os, cv2
 import matplotlib.pyplot as plt
-import copy
+import pandas as pd
+import copy, time
 """
 def compare_cats_dogs_minimizer():
     model_nums = [8,9,10]
@@ -60,6 +61,17 @@ def get_last_filename_cat_dogs(model_num):
     potential_filenames.sort(key=lambda x: int(x.split("_")[-1]))
     return potential_filenames[-1]
 
+def get_last_filename_mnist(model_num):
+    potential_filenames = []
+    for filename in os.listdir("./"):
+        if filename.find("adv_exampled_mnist_model{}".format(model_num)) >= 0:
+            potential_filenames.append(filename)
+    potential_filenames.sort(key=lambda x: int(x.split("_")[-1]))
+    if not potential_filenames == []:
+        return potential_filenames[-1]
+    else:
+        return []
+
 def compare_cats_dogs_minimizer(args):
     model_num, dataX, dataY = args
     res_arr = pickle.load(open(get_last_filename_cat_dogs(model_num), "rb"))
@@ -90,17 +102,67 @@ def compare_cats_dogs_minimizer(args):
     pickle.dump(res_arr, open("adv_exampled_cats_dogs_model{}_{}".format(model_num, index), "wb"))
     os.remove("adv_exampled_cats_dogs_model{}_{}".format(model_num, index - 10))
 
+def compare_mnist_minimizer(args):
+    model_num, dataX, dataY = args
+    last_filename = get_last_filename_mnist(model_num)
+    if last_filename == []:
+        res_arr = []
+    else:
+        res_arr = pickle.load(open(last_filename, "rb"))
+    index = len(res_arr)
+    if index >= 1000:
+        return 1
 
-def compare_dics():
-    model_numbers = [8,9,10]
-    res_arrays = [pickle.load(open(get_last_filename_cat_dogs(model_number), "rb")) for model_number in model_numbers]
+    from minimize.generate_minimize_ex import run_minimizer_inv
+    from keras import backend as K
+    import tensorflow as tf
+    import keras
+    for image,target in zip(dataX[index: index+20], dataY[index: index+20]):
+        K.clear_session()
+        tf.reset_default_graph()
+        K.set_session(tf.Session())
+        model = keras.models.load_model("./mnist_models/mnist_model{}".format(model_num))
+        res_dic = run_minimizer_inv(model, image, target, c = 1e2, x0_factors=[0.1,0.4])
+        res_dic["index"] = index
+        res_arr.append(res_dic)
+        print(model_num, index, "{:.4f}, {:.3f}".format(res_dic["std_noise"], res_dic["minimize_result"]))
+        index += 1
+    pickle.dump(res_arr, open("adv_exampled_mnist_model{}_{}".format(model_num, index), "wb"))
+    if index > 20:
+        os.remove("adv_exampled_mnist_model{}_{}".format(model_num, index - 20))
+
+def read_data_mnist():
+    train = pd.read_csv("./data/train.csv").values
+    data_X = train[:, 1:].reshape(train.shape[0], 28, 28, 1)
+    data_X = data_X.astype("float32")
+    data_X /= 255.0
+    data_Y = to_categorical(train[:, 0])
+    return data_X, data_Y
+
+def to_categorical(y, num_classes=None):
+    y = np.array(y, dtype='int').ravel()
+    if not num_classes:
+        num_classes = np.max(y) + 1
+    n = y.shape[0]
+    categorical = np.zeros((n, num_classes))
+    categorical[np.arange(n), y] = 1
+    return categorical
+
+def compare_dics(cats = False):
+    if cats:
+        model_numbers = [8,9,10]
+        res_arrays = [pickle.load(open(get_last_filename_cat_dogs(model_number), "rb")) for model_number in model_numbers]
+    else:
+        model_numbers = [1,2,3]
+        res_arrays = [pickle.load(open(get_last_filename_mnist(model_number), "rb")) for model_number in
+                      model_numbers]
     plot_arrays = [[] for _ in range(len(res_arrays))]
     for i_image in range(len(res_arrays[2])):
         save = True
         values = []
         for i_model in range(len(res_arrays)):
             res_dic = res_arrays[i_model][i_image]
-            if not res_dic["success"] == True:
+            if not res_dic["success"] == True and res_dic["minimize_result"] < 10:
                 save = False
                 break
             values.append(res_dic["minimize_result"])
@@ -109,9 +171,15 @@ def compare_dics():
                 plot_arrays[i].append(val)
 
     min = 1.
-    max = 8.
+    if cats:
+        max = 8.
+    else:
+        max = 12
     colors = ["r", "b", "g"]
-    labels = ["average depth", "shallow", "deep"]
+    if cats:
+        labels = ["average depth", "shallow", "deep"]
+    else:
+        labels = ["shallow", "average", "deep"]
     f, ax = plt.subplots()
     for i, plot_array in enumerate(plot_arrays):
         bw = (max - min) / np.sqrt(len(plot_array))
@@ -131,33 +199,53 @@ def plot_kernel_distribution(x, ax, min, max, bw, label = "", color = "b"):
         import_succeded = False
     x = np.array(x)
     x = x[~np.isnan(x)]
-    bw = bw * np.ones_like(x)
+    bw_bars = bw * np.ones_like(x)
     bars = [min]
-    for width in bw:
+    for width in bw_bars:
         bars += [bars[-1] + width * 1.2]
     ax.hist(x, bars, normed=1, facecolor=color, alpha=0.2)
     if import_succeded: #plot a kernel distribution
         print(x.shape)
         print(bw)
-        kde = KDEMultivariate(x, var_type="c")
+        kde = KDEMultivariate(np.array([x]).transpose(), bw=[bw], var_type=["c" ])
         x_grid = np.linspace(min, max, 1000)
         print(x_grid.shape)
         pdf = np.array(kde.pdf(x_grid))
         ax.plot(x_grid, pdf, linewidth=3, alpha=0.9, label='{}, {} pts'.format(label, len(x)), color = color)
     ax.legend(loc='upper right')
 
-if __name__ == "__main__":
-    """
-    p = Pool(3)
+def manager_for_cats_vs_dogs():
+    p = Pool(1, maxtasksperchild = 1)
     manager = Manager()
     dataX, dataY = open_data_dogs_cat_float(end=1000, rows=128, cols=128, TRAIN_DIR="./data/dog_vs_cats/train/")
     dataX = manager.list(dataX)
     dataY = manager.list(dataY)
     for _ in range(100):
-        res = p.map_async(compare_cats_dogs_minimizer, [(i, dataX, dataY) for i in [8,9,10]])
+        res = p.map_async(compare_cats_dogs_minimizer, [(i, dataX, dataY) for i in [8, 9, 10]])
+    for _ in range(3):
+        p.map_async(time.sleep, [3600*40 for i in range(2)])
     p.close()
     print("closed")
     p.join()
     print("joined")
-    """
-    compare_dics()
+
+def manager_for_mnist():
+    p = Pool(3, maxtasksperchild = 1)
+    manager = Manager()
+    dataX, dataY = read_data_mnist()
+    dataX = manager.list(dataX[:1000])
+    dataY = manager.list(dataY)[:1000]
+    for _ in range(50):
+        res = p.map_async(compare_mnist_minimizer, [(i, dataX, dataY) for i in [1, 2, 3]])
+        print(res.get())
+    for _ in range(3):
+        p.map_async(time.sleep, [3600*40 for i in range(2)])
+    p.close()
+    print("closed")
+    p.join()
+    print("joined")
+
+if __name__ == "__main__":
+    #manager_for_cats_vs_dogs()
+    manager_for_mnist()
+    #compare_dics(cats=True)
