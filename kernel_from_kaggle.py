@@ -175,8 +175,8 @@ print(hist.history)
 
 
 
-#score = model.evaluate(X_test, Y_test, verbose=1)
-#print('Test loss:', score[0])
-#print('Test accuracy:', score[1])
+score = model.evaluate(X_test, Y_test, verbose=1)
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
 
 
