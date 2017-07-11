@@ -17,9 +17,7 @@ import scipy.optimize, scipy.stats
 
 #instanciate the session at the loading of this module. Could perhaps lead to problems later? But instanciating the
 #session in a function doesn't work for unknown reasons.
-sess = tf.Session()
 from keras import backend as K
-K.set_session(sess)
 
 def read_data_mnist():
     train = pd.read_csv("data/train.csv").values
@@ -27,9 +25,10 @@ def read_data_mnist():
     data_X = data_X.astype(float)
     data_X /= 255.0
     data_Y = keras.utils.to_categorical(train[:, 0])
-    return data_X, data_Y
+    return np.array(data_X), np.array(data_Y)
 
 def get_gradient(model, images, results):
+    sess = K.get_session()
     #images and results need to be a list or array of images and results
 
     images = np.array(images, dtype="float32")
@@ -51,6 +50,7 @@ def get_gradient(model, images, results):
     return grad
 
 def get_softmax_results_from_images(model, images):
+    sess = K.get_session()
     images = np.array(images, dtype="float32")
     assert len(images.shape) == 4
     graph_def = tf.get_default_graph().as_graph_def()
@@ -82,33 +82,47 @@ def batch_generator(*arrays, batch_size):
         yield ret
 
 
-def return_accuracy_of_model_for_given_noise_added(model, ratio_of_noise_added = 0.2):
+def return_accuracy_of_model_for_given_noise_added(model, images, truePredictions, indicies, ratio_of_noise_added = 0.2):
     """
     returns ratio of images that are not correctly categorised given a certain noise level.
     """
 
-    dataX, dataY = read_data_mnist()
-    len_data = len(dataX)
+    len_data = len(images)
     num_same = 0
     num_diff = 0
 
     #calculate in batches, in order to speed up the calculations. Don't put much higher than about 1000 for the MNIST
     #dataset, as it already needs about 1.7GB ram.
-    batch_size = 1024
+    batch_size = np.min([len_data, 1024])
     total_iter = int(len_data/batch_size)
-    for images, results in tqdm(batch_generator(dataX, dataY, batch_size=batch_size), total=total_iter):
+    dics = []
+    for images, results in tqdm(batch_generator(images, truePredictions, batch_size=batch_size), total=total_iter):
+        images = np.array(images)
+        results = np.array(results)
+
         grad = get_gradient(model, images, results)
-        modified_image = np.clip(np.array(images) + ratio_of_noise_added * np.sign(grad), 0, 1)
-        softmax_res = get_softmax_results_from_images(model, images=modified_image)
+        modified_images = np.clip(np.array(images) + ratio_of_noise_added * np.sign(grad), 0, 1)
+        
 
-        res_of_mod_image = get_max_of_softmax_res(softmax_res)
-        result_norm = get_max_of_softmax_res(results)
-        num_incorr = np.sum((result_norm - res_of_mod_image) != 0)
+        result_images = model.predict(images.astype(dtype="float32"), batch_size=batch_size, verbose=0)
+        result_adv_exs = model.predict(modified_images.astype(dtype="float32"), batch_size=batch_size, verbose=0)
+        for i in range(len(images)):
+            image_target = np.argmax(results[i])
+            prediction_image = np.argmax(result_images[i])
+            prediction_adv_ex = np.argmax(result_adv_exs[i])
+            noise = modified_images[i] - images[i]
+            dics.append({"image_target": image_target,
+                         "result_image": result_images[i],
+                         "prediction_image": prediction_image,
+                         "result_adv_example": result_adv_exs[i],
+                         "prediction_adv_example": prediction_adv_ex,
+                         "constant": ratio_of_noise_added,
+                         "std_noise": np.std(noise),
+                         "mean_noise": np.mean(noise),
+                         "index": indicies[i],
+                         "success": image_target == prediction_image and image_target != prediction_adv_ex})
 
-        num_same += len(images)-num_incorr
-        num_diff += num_incorr
-    print("percent incorrect: {:.2f}%".format(num_diff/(num_diff + num_same)*100))
-    return num_diff/(num_diff + num_same)
+    return np.array(dics)
 
 def return_min_noise_for_false_classification(model, images, results):
     """
@@ -120,23 +134,25 @@ def return_min_noise_for_false_classification(model, images, results):
     gradients = get_gradient(model, images, results)
     noise_arr = []
 
-    for i, (images, results, grad) in tqdm(enumerate(batch_generator(images, results, gradients, batch_size = 1)), total=len(images)):
+    for i in tqdm(range(len(images))):
+        grad = gradients[i]
+    #for i, (images, results, grad) in tqdm(enumerate(batch_generator(images, results, gradients, batch_size = 1)), total=len(images)):
         #grad = np.random.randint(0,2,(1,28,28,1))*2-1
         if np.sum(grad) == 0:
             print("gradient is zero, won't find adv. ex.")
             noise_arr.append(np.full(images[0].shape, np.nan))
             continue
 
-        def modify_single_image(images, noise_ratio):
-            return np.clip(np.array(images[0]) + noise_ratio * np.sign(np.array(grad[0])), 0, 1)
+        def modify_single_image(image, noise_ratio):
+            return np.clip(np.array(image) + noise_ratio * np.sign(np.array(grad)), 0, 1)
         def min_func(noise_ratio):
-            if noise_ratio < 0 or noise_ratio > 1:
+            if noise_ratio[0] < 0 or noise_ratio[0] > 1:
                 return 1e5
-            modified_image = [modify_single_image(images, noise_ratio)]
+            modified_image = [modify_single_image(images[i], noise_ratio[0])]
             modified_results = get_softmax_results_from_images(model, images=modified_image)
-            num_origin_result = get_max_of_softmax_res(results)[0]
+            num_origin_result = get_max_of_softmax_res(np.array([results[i]]))[0]
 
-            if get_max_of_softmax_res(modified_results)[0] == get_max_of_softmax_res(results)[0]:
+            if get_max_of_softmax_res(modified_results)[0] == get_max_of_softmax_res(np.array([results[i]]))[0]:
                 diff_to_false_class = 0.001
                 diff_to_origin = modified_results[0] - modified_results[0][num_origin_result] - diff_to_false_class
                 diff_to_origin = np.delete(diff_to_origin, num_origin_result)
@@ -158,9 +174,13 @@ def return_min_noise_for_false_classification(model, images, results):
         #print(i, res_optimization.x[0])
         if not min_func(res_optimization.x) < 1:
             print("Couldn't find adv. example")
-            noise_arr.append(np.full(images[0].shape, np.nan))
+            noise_arr.append({"image": np.full(images[i].shape, np.nan),
+                              "min_factor":res_optimization.x[0],
+                              "success": False })
         else:
-            noise_arr.append(modify_single_image(images, res_optimization.x[0])-images[0])
+            noise_arr.append({"image": np.array(modify_single_image(images[i], res_optimization.x[0])-images[i]),
+                              "min_factor":res_optimization.x[0],
+                              "success": True })
     return np.array(noise_arr)
 
 def analyse_min_noise(model, num_images_to_analyse):
@@ -172,16 +192,57 @@ def analyse_min_noise(model, num_images_to_analyse):
 
     dataX, dataY = read_data_mnist()
     index_chosen = np.random.choice(range(len(dataX)), size=num_images_to_analyse, replace=False)
-    noises = return_min_noise_for_false_classification(model, dataX[index_chosen], dataY[index_chosen])
+    noises_info = return_min_noise_for_false_classification(model, dataX[index_chosen], dataY[index_chosen])
+    noises = []
+    for dicNoise in noises_info:
+        noises.append(dicNoise["image"])
+    noises = np.array(noises)
     std_arr = np.nanstd(noises, (1,2,3))
     return np.nanmean(std_arr), scipy.stats.sem(std_arr, nan_policy="omit")
+
+def run_gradient(model, image, truePrediction, num_images=1000):
+    noise = return_min_noise_for_false_classification(model, np.array([image]), np.array([truePrediction]))
+    noise = noise[0]
+    result_image = model.predict(np.array([image], dtype="float32"), batch_size=1, verbose=0)
+    result_adv_ex = model.predict(np.array([image + noise], dtype="float32"), batch_size=1, verbose=0)
+    prediction_adv_ex = np.argmax(result_adv_ex)
+    image_target = np.argmax(truePrediction)
+    prediction_image = np.argmax(result_image)
+    
+    return_dic = {"image_target": image,
+                  "result_image": result_image,
+                  "prediction_image": prediction_image,
+                  "result_adv_example": result_adv_ex,
+                  "prediction_adv_example": prediction_adv_ex,
+                  "noise": noise,
+                  "minimize_result": final_res_optimize.fun,
+                  "std_noise": np.std(noise)}
 
 #random_grad = np.random.randint(0,2,(1,28,28,1))*2-1
 
 if __name__ == "__main__":
-    model = load_model('keras_model1')
+    dataX, dataY = read_data_mnist()
+    factor_noise = 0.2
+    amountImgs = 1024
+
+    modelName = "3"
+
+    saveName = "grad_results/mnist_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
+    modelName = "./mnist_models/mnist_model" + modelName
+
+    print("Generating adversarial examples using the gadient method using a factor of" + str(factor_noise))
+    print("processing model: " + modelName)
+    model = load_model(modelName)
+    results = return_accuracy_of_model_for_given_noise_added(model, np.array(dataX[:amountImgs]), np.array(dataY[:amountImgs]), np.arange(0, amountImgs), factor_noise)
+    count_success = 0
+    for result in results:
+        if result["success"] == True:
+            count_success += 1
+    print("amount success: " + str(count_success/amountImgs) + "%")
+    #print(saveName)
+    np.save(saveName, results)
     #return_accuracy_of_model_for_given_noise_added(model)
-    print(analyse_min_noise(model, 10))
+    #print(analyse_min_noise(model, 10))
 
 
 
