@@ -284,7 +284,7 @@ if __name__ == "__main__":
     count_success = 0
     count_correct_prediction = 0
     for result in results:
-        if result["image_target"] == result["prediction_image"]:
+        if result["image_target"] == result["prediction_image"] and result["std_noise"] != 0:
             count_correct_prediction += 1
         if result["success"] == True:
             count_success += 1
