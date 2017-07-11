@@ -20,7 +20,7 @@ def get_percentage_false_class_for_resultset(results):
 
 def read_models():
     model_files_cvd = np.sort(glob.glob("./grad_results/cvd*N1024_f0003.npy"))
-    model_files_mnist = np.sort(glob.glob("./grad_results/mnist*N1024_f02.npy"))
+    model_files_mnist = np.sort(glob.glob("./grad_results/mnist*N1024_f018.npy"))
 
     model_files_cvd = np.append(model_files_cvd[1:], [model_files_cvd[0]])
 
@@ -37,7 +37,7 @@ def read_models():
         
 def get_percentage_false_class():
     model_files_cvd = np.sort(glob.glob("./grad_results/cvd*N1024_f0003.npy"))
-    model_files_mnist = np.sort(glob.glob("./grad_results/mnist*N1024_f02.npy"))
+    model_files_mnist = np.sort(glob.glob("./grad_results/mnist*N25000_f02.npy"))
 
     model_files_cvd = np.append(model_files_cvd[1:], [model_files_cvd[0]])
 
@@ -57,10 +57,13 @@ def get_percentage_false_class():
 
 def plot_percentage_false_class(percentage, xlabels=None, c=0.2):
     fig, ax = plt.subplots(figsize=constants.FIG_SIZE)
-    ax.plot(xlabels, percentage, "o")
+    x = range(len(percentage))
+    ax.plot(x, percentage, "o")
     ax.set_xlabel("amount of convolutional layers")
     ax.set_ylabel("Successrate adversarial example")
     ax.set_title("Successrate of adversarial examples created with the gradient method and c = "+str(c))
+    #ax.grid()
+    #ax.set_xticks(x, xlabels)
     plt.show()
 
 if __name__ == "__main__":

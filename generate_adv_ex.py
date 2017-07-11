@@ -263,19 +263,19 @@ if __name__ == "__main__":
         sys.exit(1)
 
     factor_noise = float(sys.argv[1])
-    amountImgs = 1024
+    amountImgs = 25000
 
-    #dataX, dataY = read_data_mnist()
-    dataX, dataY = open_data_dogs_cat_float(beg = 0, end = amountImgs)
+    dataX, dataY = read_data_mnist()
+    #dataX, dataY = open_data_dogs_cat_float(beg = 0, end = amountImgs)
     
 
     #modelName = "9" #1,2,3 for mnist, 8,9,10 for cats vs dogs
     modelName = str(sys.argv[2])
 
-    #saveName = "grad_results/mnist_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
-    #modelName = "./mnist_models/mnist_model" + modelName
-    saveName = "grad_results/cvd_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
-    modelName = "keras_model_cat_dogs" + modelName
+    saveName = "grad_results/mnist_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
+    modelName = "./mnist_models/mnist_model" + modelName
+    #saveName = "grad_results/cvd_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
+    #modelName = "keras_model_cat_dogs" + modelName
 
     print("Generating adversarial examples using the gadient method using a factor of " + str(factor_noise))
     print("processing model: " + modelName)
@@ -288,7 +288,7 @@ if __name__ == "__main__":
             count_correct_prediction += 1
         if result["success"] == True:
             count_success += 1
-    print("amount success: " + str(count_success/amountImgs) + "%")
+    print("amount success: " + str(count_success/count_correct_prediction) + "%")
     print(count_correct_prediction/amountImgs)
     #print(saveName)
     np.save(saveName, results)
