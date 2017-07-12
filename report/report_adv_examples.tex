@@ -112,9 +112,9 @@ In this work we generate adversarial examples for convolutional networks trained
 
 Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. The results of the different convolutions are set as input for different ``maps'' in a convolutional layer. Between convolutional layers, pooling layers are inserted. They reduce the number of the previous by taking the maximum of a square of 2x2 pixels in our case. To counterbalance the reduced resolution the number of pixels, the number of maps of the following convolutional layers are increased.
 
-Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used.
-
 At the end some fully connected layers are inserted. There every neuron is connected to every other one.
+
+This sort of network mimic the visual areas of mammals. There neurons typically respond to a small region of the visual field called receptive field. The size of the receptive fields increase in areas higher in the visual hierarchy, like in a convolutional network with pooling layers.
 
 \section{Methods}
 
@@ -193,7 +193,7 @@ In the figure \ref{fig:examples} different examples of adversarial examples, cre
 As visible in figure \ref{fig:} adversarial examples could successfully be created with both presented methods, which are just sightly to not visible at all using the human eye. Overall the minimizer seems to produces better results, as the standard deviation of the noises is in average smaller compared to the onces using the gradient method. This is achieved at the cost of higher computation time. The gradient method produces decent results in short time, while the minimizer produces better results at higher computational cost. \\
 The hypothesis of the dependency of the robustness of the networks to the deepness (number of layers) of the networks could not be proven as seen in figure \ref{fig:}. However for the networks trained on the dogs vs cats dataset such a trend was visible. In order to actually conclude the truth of this hypothesis, one would need to train a lot more networks with different deepness. As our computational power was limited, this was not possible to us. However we could show that small changes in deepness will not always but can make a change in robustness against adversarial examples.\\
 Furthermore, it seems that networks get a lot more vulnerable regarding adversarial examples the large the input dimension is. The dogs vs cats trained networks, which had an input dimension of $(128 \times 128 \times 3)$ produced adversarial examples which were not visible at all, while the MNIST trained networks with an input dimension of $(28 \times 28 \times 1)$ produced noises with which one could still clearly see the original shape, however the noise was visible in the adversarial example (see figure \ref{fig:}).\\
-This sort of network mimic the visual areas of mammals. There neurons typically respond to a small region of the visual field called receptive field. The size of the receptive fields increase in areas higher in the visual hierarchy, like in a convolutional network with pooling layers.
+
 
 
 
