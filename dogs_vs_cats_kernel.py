@@ -354,7 +354,7 @@ def catdog8():
     model.add(Dropout(0.5))
 
     #model.add(core.Dense(nb_classes, activation="softmax"))
-    model.add(Dense(2, activation="softmax"))#, kernel_initializer='zeros'))
+    model.add(Dense(2,   activation="softmax"))#, kernel_initializer='zeros'))
 
     model.compile(loss=keras.losses.categorical_crossentropy,
         optimizer = keras.optimizers.Adam(lr=0.0001),#, decay=3e-4),
