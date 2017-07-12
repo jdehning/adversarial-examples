@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.4.6)  12 JUL 2017 12:34
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.4.6)  12 JUL 2017 16:25
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1488,14 +1488,14 @@ LaTeX Font Warning: Font shape `T1/cmss/m/n' in size <4> not available
 (./presentation_br_ratio.toc) [2
 
 ]
-<./pictures/MNIST.png, id=31, 160.34906pt x 75.28125pt>
+<./pictures/MNIST.png, id=60, 160.34906pt x 75.28125pt>
 File: ./pictures/MNIST.png Graphic file (type png)
 
 <use ./pictures/MNIST.png>
 Package pdftex.def Info: ./pictures/MNIST.png used on input line 59.
 (pdftex.def)             Requested size: 107.55098pt x 50.49445pt.
 
-<./pictures/dogs_vs_cats.jpg, id=33, 451.6875pt x 279.0425pt>
+<./pictures/dogs_vs_cats.jpg, id=62, 451.6875pt x 279.0425pt>
 File: ./pictures/dogs_vs_cats.jpg Graphic file (type jpg)
 
 <use ./pictures/dogs_vs_cats.jpg>
@@ -1510,34 +1510,96 @@ Package pdftex.def Info: ./pictures/dogs_vs_cats.jpg used on input line 59.
 ] [6
 
 ]
-File: ./pictures/MNIST.png Graphic file (type png)
- <use ./pictures/MNIST.png>
-Package pdftex.def Info: ./pictures/MNIST.png used on input line 128.
-(pdftex.def)             Requested size: 276.559pt x 129.84303pt.
+<../figures/mnist_model2_I0_f0276.pdf, id=102, 542.025pt x 180.675pt>
+File: ../figures/mnist_model2_I0_f0276.pdf Graphic file (type pdf)
+
+<use ../figures/mnist_model2_I0_f0276.pdf>
+Package pdftex.def Info: ../figures/mnist_model2_I0_f0276.pdf used on input lin
+e 128.
+(pdftex.def)             Requested size: 307.28987pt x 102.43167pt.
  [7
 
-]
-File: ./pictures/MNIST.png Graphic file (type png)
+ <../figures/mnist_model2_I0_f0276.pdf>]
+<../figures/adv_example_minimizer_mnist.pdf, id=134, 542.025pt x 180.675pt>
+File: ../figures/adv_example_minimizer_mnist.pdf Graphic file (type pdf)
 
-<use ./pictures/MNIST.png>
-Package pdftex.def Info: ./pictures/MNIST.png used on input line 135.
-(pdftex.def)             Requested size: 276.559pt x 129.84303pt.
+<use ../figures/adv_example_minimizer_mnist.pdf>
+Package pdftex.def Info: ../figures/adv_example_minimizer_mnist.pdf used on inp
+ut line 135.
+(pdftex.def)             Requested size: 307.28987pt x 102.43167pt.
  [8
 
-]
-File: ./pictures/MNIST.png Graphic file (type png)
- <use ./pictures/MNIST.png>
-Package pdftex.def Info: ./pictures/MNIST.png used on input line 142.
-(pdftex.def)             Requested size: 276.559pt x 129.84303pt.
+ <../figures/adv_example_minimizer_mnist.pdf>]
+<../figures/cvd_model9_I0_f0004.pdf, id=166, 542.025pt x 180.675pt>
+File: ../figures/cvd_model9_I0_f0004.pdf Graphic file (type pdf)
+
+<use ../figures/cvd_model9_I0_f0004.pdf>
+Package pdftex.def Info: ../figures/cvd_model9_I0_f0004.pdf used on input line 
+142.
+(pdftex.def)             Requested size: 307.28987pt x 102.43167pt.
  [9
 
-]
-File: ./pictures/MNIST.png Graphic file (type png)
+ <../figures/cvd_model9_I0_f0004.pdf>]
+<../figures/adv_example_minimizer_dogs_vs_cats.pdf, id=199, 542.025pt x 180.675
+pt>
+File: ../figures/adv_example_minimizer_dogs_vs_cats.pdf Graphic file (type pdf)
 
-<use ./pictures/MNIST.png>
-Package pdftex.def Info: ./pictures/MNIST.png used on input line 149.
-(pdftex.def)             Requested size: 276.559pt x 129.84303pt.
+ <use ../figures/adv_example_minimizer_dogs_vs_cats.pdf>
+Package pdftex.def Info: ../figures/adv_example_minimizer_dogs_vs_cats.pdf used
+ on input line 149.
+(pdftex.def)             Requested size: 307.28987pt x 102.43167pt.
  [10
+
+ <../figures/adv_example_minimizer_dogs_vs_cats.pdf>]
+<../figures/mnist_grad_misclassificationrate.pdf, id=231, 426.00002pt x 342.267
+23pt>
+File: ../figures/mnist_grad_misclassificationrate.pdf Graphic file (type pdf)
+ <use ../figures/mnist_grad_misclassificationrate.pdf>
+Package pdftex.def Info: ../figures/mnist_grad_misclassificationrate.pdf used o
+n input line 158.
+(pdftex.def)             Requested size: 276.559pt x 222.21515pt.
+
+Overfull \vbox (24.2612pt too high) detected at line 158
+ []
+
+[11
+
+ <../figures/mnist_grad_misclassificationrate.pdf>]
+<../figures/plot_mnist_robustness_minimizer.pdf, id=256, 462.52798pt x 346.8960
+1pt>
+File: ../figures/plot_mnist_robustness_minimizer.pdf Graphic file (type pdf)
+ <use ../figures/plot_mnist_robustness_minimizer.pdf>
+Package pdftex.def Info: ../figures/plot_mnist_robustness_minimizer.pdf used on
+ input line 165.
+(pdftex.def)             Requested size: 276.559pt x 207.42992pt.
+
+Overfull \vbox (9.47597pt too high) detected at line 165
+ []
+
+[12
+
+ <../figures/plot_mnist_robustness_minimizer.pdf>]
+<../figures/cvd_grad_misclassificationrate.pdf, id=303, 433.62pt x 289.08pt>
+File: ../figures/cvd_grad_misclassificationrate.pdf Graphic file (type pdf)
+
+<use ../figures/cvd_grad_misclassificationrate.pdf>
+Package pdftex.def Info: ../figures/cvd_grad_misclassificationrate.pdf used on 
+input line 172.
+(pdftex.def)             Requested size: 276.559pt x 184.37979pt.
+ [13
+
+ <../figures/cvd_grad_misclassificationrate.pdf>]
+<../figures/plot_cats_vs_dogs_robustness_minimizer.pdf, id=350, 400.00002pt x 2
+47.2136pt>
+File: ../figures/plot_cats_vs_dogs_robustness_minimizer.pdf Graphic file (type 
+pdf)
+ <use ../figures/plot_cats_vs_dogs_robustness_minimizer.pdf>
+Package pdftex.def Info: ../figures/plot_cats_vs_dogs_robustness_minimizer.pdf 
+used on input line 179.
+(pdftex.def)             Requested size: 276.559pt x 170.93214pt.
+ [14
+
+ <../figures/plot_cats_vs_dogs_robustness_minimizer.pdf>] [15
 
 ]
 \tf@nav=\write6
@@ -1549,31 +1611,26 @@ Package pdftex.def Info: ./pictures/MNIST.png used on input line 149.
 \tf@snm=\write8
 \openout8 = `presentation_br_ratio.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 191.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 191.
- (./presentation_br_ratio.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 191.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 191.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 200.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 200.
 
+(./presentation_br_ratio.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 200.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 200.
+Package rerunfilecheck Info: File `presentation_br_ratio.out' has not changed.
+(rerunfilecheck)             Checksum: B30EB63B8CB838690E2DD8420FD1A82C;245.
 
-Package rerunfilecheck Warning: File `presentation_br_ratio.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `presentation_br_ratio.out':
-(rerunfilecheck)             Before: D41D8CD98F00B204E9800998ECF8427E;0
-(rerunfilecheck)             After:  F357092534F65985A90460E6AEFA8DFE;158.
 
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 1.0pt have occurred.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 191.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 200.
  ) 
 Here is how much of TeX's memory you used:
- 33882 strings out of 493304
- 770352 string characters out of 6139872
- 857233 words of memory out of 5000000
- 36617 multiletter control sequences out of 15000+600000
+ 33979 strings out of 493304
+ 772875 string characters out of 6139872
+ 857238 words of memory out of 5000000
+ 36693 multiletter control sequences out of 15000+600000
  17936 words of font info for 50 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
  50i,15n,74p,10434b,712s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1581,17 +1638,18 @@ Here is how much of TeX's memory you used:
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist
 /fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/symbols/msam10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi
-0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi1095.pfb></usr/share
-/texmf/fonts/type1/public/cm-super/sfss0600.pfb></usr/share/texmf/fonts/type1/p
-ublic/cm-super/sfss1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1
-440.pfb>
-Output written on presentation_br_ratio.pdf (10 pages, 168256 bytes).
+type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symb
+ols/msam10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsi0800.pfb></usr
+/share/texmf/fonts/type1/public/cm-super/sfsi1095.pfb></usr/share/texmf/fonts/t
+ype1/public/cm-super/sfss0600.pfb></usr/share/texmf/fonts/type1/public/cm-super
+/sfss1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfss1440.pfb>
+Output written on presentation_br_ratio.pdf (15 pages, 762377 bytes).
 PDF statistics:
- 154 PDF objects out of 1000 (max. 8388607)
- 111 compressed objects within 2 object streams
- 24 named destinations out of 1000 (max. 500000)
- 53 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 425 PDF objects out of 1000 (max. 8388607)
+ 270 compressed objects within 3 object streams
+ 36 named destinations out of 1000 (max. 500000)
+ 133 words of extra memory for PDF output out of 10000 (max. 10000000)
 

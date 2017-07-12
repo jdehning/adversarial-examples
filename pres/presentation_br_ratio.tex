@@ -121,64 +121,73 @@ with constraint:
 \section{Visualization of adversarial examples}
 
 \begin{frame}
-\frametitle{MNIST adversarial examples I} 
+\frametitle{MNIST adversarial examples (Gradient Method)} 
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{./pictures/MNIST.png}
+\includegraphics[width=\linewidth]{../figures/mnist_model2_I0_f0276.pdf}
 \end{figure}
 \end{frame}
 
 \begin{frame}
-\frametitle{MNIST adversarial examples II} 
+\frametitle{MNIST adversarial examples (Minimizer)} 
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{./pictures/MNIST.png}
+\includegraphics[width=\linewidth]{../figures/adv_example_minimizer_mnist.pdf}
 \end{figure}
 \end{frame}
 
 \begin{frame}
-\frametitle{Dogs vs. Cats adversarial examples I} 
+\frametitle{Dogs vs. Cats adversarial examples (Gradient Method)} 
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{./pictures/MNIST.png}
+\includegraphics[width=\linewidth]{../figures/cvd_model9_I0_f0004.pdf}
 \end{figure}
 \end{frame}
 
 \begin{frame}
-\frametitle{Dogs vs. Cats adversarial examples II} 
+\frametitle{Dogs vs. Cats adversarial examples (Minimizer)} 
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{./pictures/MNIST.png}
+\includegraphics[width=\linewidth]{../figures/adv_example_minimizer_dogs_vs_cats.pdf}
 \end{figure}
 \end{frame}
 
+\section{Results}
 
+\begin{frame}
+\frametitle{MNIST misclassification rate for gradient method} 
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{../figures/mnist_grad_misclassificationrate.pdf}
+\end{figure}
+\end{frame}
 
-%\begin{frame}
-%\frametitle{Adversarial examples}
-%\begin{itemize}
-%\item Small pertubations $\rightarrow$ false classification
-%\end{itemize}
-%\begin{figure}
-%\includegraphics[width=0.9\linewidth]{./PandaGibbon}
-%\end{figure}
-%\begin{itemize}
-%\item From Goodfellow et al. 2015
-%\end{itemize}
-%\end{frame}
-%
-%\begin{frame}
-%\frametitle{Further ideas}
-%\begin{itemize}
-%\item improve network by training with the perturbed images
-%\begin{itemize}
-%\item improved kaggle score?
-%\end{itemize}
-%\item compare different datasets
-%\item compare robustness of different networks
-%\end{itemize}
-%\end{frame}
-%
+\begin{frame}
+\frametitle{MNIST robustness Minimizer} 
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{../figures/plot_mnist_robustness_minimizer.pdf}
+\end{figure}
+\end{frame}
 
+\begin{frame}
+\frametitle{Dogs vs. Cats misclassification rate for gradient method} 
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{../figures/cvd_grad_misclassificationrate.pdf}
+\end{figure}
+\end{frame}
 
+\begin{frame}
+\frametitle{Dogs vs. Cats robustness Minimizer} 
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{../figures/plot_cats_vs_dogs_robustness_minimizer.pdf}
+\end{figure}
+\end{frame}
 
+\section{conclusion}
 
+\begin{frame}
+\frametitle{Conclusion} 
+\begin{figure}
+\begin{itemize}
+\item test
+\end{itemize}
+\end{figure}
+\end{frame}
 
 
 
