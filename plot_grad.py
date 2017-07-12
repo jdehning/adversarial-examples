@@ -29,7 +29,7 @@ def read_models():
     model_files_cvd = np.sort(glob.glob("./grad_results/cvd*N1024_f0003.npy"))
     model_files_mnist = np.sort(glob.glob("./grad_results/mnist*N25000_f02.npy"))
 
-    model_files_cvd = np.append(model_files_cvd[1:], [model_files_cvd[0]])
+    model_files_cvd = np.array([model_files_cvd[2], model_files_cvd[1], model_files_cvd[0]])
 
     results_cvd = []
     results_mnist = []
