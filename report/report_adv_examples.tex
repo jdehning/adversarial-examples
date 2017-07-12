@@ -113,6 +113,15 @@ Neural networks
 
 Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. 
 
+\subsection{Methods for creating adversarial examples}
+
+There are various ideas, that have already been used to create adversarial examples. In this project we tagged along the propositions of \citeauthor{paperGrad} who proposed to create a noise in the direction of the gradient of the loss function and \citeauthor{paperMinimize} who proposed to minimize the L2-norm of the noise under misclassification.
+\subsubsection*{Gradient method}
+In this method a noise is created in the direction of the gradient of the loss function to maximise the value of the loss function for the right prediction in order to for another 
+\begin{align*}
+\vec{\eta} = \epsilon \cdot \operatorname{sign} \left( \nabla_{\vec{x}} J_{loss} \big \vert_{\vec{x}} \right) 
+\end{align*}
+
 \subsubsection{Wide text (A level-3 head)}
 The \texttt{widetext} environment will make the text the width of the
 full page, as on page~\pageref{eq:wideeq}. (Note the use the
