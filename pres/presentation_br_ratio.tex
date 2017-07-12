@@ -30,10 +30,21 @@
 \titlepage
 \end{frame} 
 
+\section{Intro}
+
 \begin{frame}
-\frametitle{Table of Contents}
-\tableofcontents
+\frametitle{Dog or Cat?}
+\begin{figure}
+\includegraphics[width=\linewidth]{../figures/dog_vs_cat1.pdf}
+\end{figure}
 \end{frame} 
+
+\begin{frame}
+\frametitle{Dog or Cat?}
+\begin{figure}
+\includegraphics[width=\linewidth]{../figures/dog_vs_cat2.pdf}
+\end{figure}
+\end{frame}
 
 \section{Data sets}
 
@@ -44,28 +55,33 @@
 \centering
 MNIST
 \begin{figure}
-\includegraphics[width=0.7\linewidth]{./pictures/MNIST.png}
+\includegraphics[height=0.5\linewidth]{./pictures/MNIST.png}
 \end{figure}
+\begin{itemize}
+\item greyscale
+\item 28x28 pixel
+\end{itemize}
 \end{column}
 \begin{column}{0.5\textwidth}
 \centering
 Dogs vs. Cats
 \begin{figure}
-\includegraphics[width=0.7\linewidth]{./pictures/dogs_vs_cats.jpg}
+\includegraphics[height=0.5\linewidth]{./pictures/dogs_vs_cats.jpg}
 \end{figure}
+\begin{itemize}
+\item colored
+\item 128x128 pixel
+\end{itemize}
 \end{column}
 \end{columns}
 
 \end{frame} 
-%slide numbering
-%videa scrambling, temporal receptor fields larger uri hasson
-%summary slide
-%changes of task
+
 
 \begin{frame}
 \frametitle{Networks}
 \begin{itemize}
-\item CNN
+\item Convolutional Neural Network
 \end{itemize}
 \begin{table}
 \centering
@@ -95,6 +111,8 @@ Dogs vs. Cats & 11 CL - 3 FC & 14 \\
 \hspace{18em} &\epsilon \ll 1 
 \end{align*}
 
+From Goodfellow et al. 2015
+
 \end{frame}
 
 \begin{frame}
@@ -102,7 +120,7 @@ Dogs vs. Cats & 11 CL - 3 FC & 14 \\
 
 Minimize over $\eta$:
 \begin{align*}
-\min_{\vec{\eta}} \left(\frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} + c \cdot \sigma(\vec{\eta}) \right) & \\
+\min_{\vec{\eta}} \left( c \cdot \sigma(\vec{\eta}) + \frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} \right)  & \\
 &\vec{\eta}: \text{noise} \\
 &\vec{x}: \text{picture} \\
 &p: \text{prediction} \\
@@ -115,7 +133,7 @@ with constraint:
 \vec{x}+\vec{\eta}\in [0,1]^n
 \end{equation*}
 
-
+From Szegedy et al. 2014
 \end{frame}
 
 \section{Visualization of adversarial examples}
@@ -158,16 +176,16 @@ with constraint:
 \end{frame}
 
 \begin{frame}
-\frametitle{MNIST robustness Minimizer} 
+\frametitle{Dogs vs. Cats misclassification rate for gradient method} 
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{../figures/plot_mnist_robustness_minimizer.pdf}
+\includegraphics[width=0.9\linewidth]{../figures/cvd_grad_misclassificationrate.pdf}
 \end{figure}
 \end{frame}
 
 \begin{frame}
-\frametitle{Dogs vs. Cats misclassification rate for gradient method} 
+\frametitle{MNIST robustness Minimizer} 
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{../figures/cvd_grad_misclassificationrate.pdf}
+\includegraphics[width=0.9\linewidth]{../figures/plot_mnist_robustness_minimizer.pdf}
 \end{figure}
 \end{frame}
 
@@ -183,8 +201,34 @@ with constraint:
 \begin{frame}
 \frametitle{Conclusion} 
 \begin{figure}
+%\begin{itemize}
+%\item Minimizer: 
+%\begin{itemize}
+%\item smaller noise
+%\item computationally expensive
+%\end{itemize}
+%\item Gradient: 
+%\begin{itemize}
+%\item larger noise
+%\item computationally cheap
+%\end{itemize}
+
 \begin{itemize}
-\item test
+\item Minimizer: smaller noise
+\item Gradient: computationally cheap
+\end{itemize}
+\hspace{2em}
+\begin{itemize}
+\item MNIST: 
+\begin{itemize}
+\item robust
+\item no dependence on number of layers found
+\end{itemize}
+\item Dogs vs. Cats: 
+\begin{itemize}
+\item vulnerable
+\item deeper networks seemingly less vulnerable
+\end{itemize} 
 \end{itemize}
 \end{figure}
 \end{frame}

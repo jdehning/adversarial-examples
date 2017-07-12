@@ -182,17 +182,18 @@ def compare_dics(cats = False):
         max = 12
     colors = ["r", "b", "g"]
     if cats:
-        labels = ["shallow: 13 layers", "medium: 14 layers", "deep: 15 layers"]
+        labels = ["13 layers", "14 layers", "15 layers"]
     else:
-        labels = ["shallow: 6 layers", "medium: 7 layers", "deep: 8 layers"]
+        labels = ["6 layers", "7 layers", "8 layers"]
     f, ax = plt.subplots()
     for i, plot_array in enumerate(plot_arrays):
-        bw = (max - min) / np.sqrt(len(plot_array))
+        bw = (max - min) / np.sqrt(len(plot_array))*1.5
         print(plot_array)
         plot_kernel_distribution(plot_array, ax, label=labels[i], bw=bw,
                                  min=min, max=max, color = colors[i])
     plt.xlim(min, max)
     plt.xlabel("Minimizer value")
+    plt.ylabel("Relative number of pictures")
     plt.tight_layout()
     if cats:
         plt.savefig("figures/plot_cats_vs_dogs_robustness_minimizer.pdf")
@@ -260,9 +261,9 @@ def compare_dics_gradient(cats = False):
         max = 1
     colors = ["r", "b", "g"]
     if cats:
-        labels = ["shallow: 13 layers", "medium: 14 layers", "deep: 15 layers"]
+        labels = ["13 layers", "14 layers", "15 layers"]
     else:
-        labels = ["shallow: 6 layers", "medium: 7 layers", "deep: 8 layers"]
+        labels = ["6 layers", "7 layers", "8 layers"]
     f, ax = plt.subplots()
     for i, plot_array in enumerate(plot_arrays):
         bw = (max - min) / np.sqrt(len(plot_array))
@@ -271,6 +272,7 @@ def compare_dics_gradient(cats = False):
                                  min=min, max=max, color = colors[i])
     plt.xlim(min, max)
     plt.xlabel("Minimizer value")
+    plt.ylabel("Relative number of pictures")
     plt.tight_layout()
     if cats:
         pass
@@ -302,7 +304,7 @@ def plot_kernel_distribution(x, ax, min, max, bw, label = "", color = "b"):
         x_grid = np.linspace(min, max, 1000)
         #print(x_grid.shape)
         pdf = np.array(kde.pdf(x_grid))
-        ax.plot(x_grid, pdf, linewidth=3, alpha=0.9, label='{}, {} pts'.format(label, len(x)), color = color)
+        ax.plot(x_grid, pdf, linewidth=3, alpha=0.9, label='{}, {} pictures'.format(label, len(x)), color = color)
     ax.legend(loc='upper right')
 
 def manager_for_cats_vs_dogs():
@@ -339,5 +341,5 @@ def manager_for_mnist():
 if __name__ == "__main__":
     #manager_for_cats_vs_dogs()
     #manager_for_mnist()
-    compare_dics(cats=True)
+    compare_dics(cats=False)
     #compare_dics_gradient(cats = True)
