@@ -1,6 +1,18 @@
 #pycharm:
 .idea/
 
+#compilation files of tex
+pres/presentation_br_ratio.aux
+pres/presentation_br_ratio.log
+pres/presentation_br_ratio.nav
+pres/presentation_br_ratio.pdf
+pres/presentation_br_ratio.snm
+pres/presentation_br_ratio.synctex.gz
+pres/presentation_br_ratio.toc
+
+report/refs.bib.bak
+report/report_adv_examples.pdf
+
 # Byte-compiled / optimized
 __pycache__/
 *.py[cod]
