@@ -147,6 +147,13 @@ This method is based on the one presented on the method by \citeauthor{paperMini
 \end{align*}
 with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\sigma (\vec{\eta})$, a scaling factor $c$ and a small factor $\delta$. As the goal is to minimize the L2-norm we chose the standard deviation to keep this formula scalable for different input dimensions (which is the L2-norm divided by square root of N). To minimize the prediction one could just simply add the prediction linearly, however better results were accomplished but adding the nonlinearity of $1/(1-p)$, as predictions close to one (which are unwanted) are stronger panelized. However as $p$ can reach a value of $1$ the function $1/(1 + \delta - p)$ was chosen with $\delta \ll 1$ in order to prevent devision by zero. The scaling constant $c$ is used to keep the two different parts in balanced. Unfortunately those where found to be not completely independent of the input dimensions, however just a factor of 10 apart for the MNIST and the dogs vs cats networks. For the MNIST networks a scaling factor of $c = 100$ and for dogs vs cats networks a scaling factor of $c = 1000$ was used. Those were found by a rough linear minimization.
 
+\subsection{Hypothesis}
+
+How robust a network is to adversarial examples is no easy task to predict, especially since the origin of adversarial examples is still under debate. \citet{paperGrad} argues that adversarial can be explained by linear behavior in high-dimensional spaces and that most neural networks are kept near the linear regime for training purposes. Following this argumentation one has to expect that neural networks with a high-dimensional input will be more vulnerable to adversarial examples.
+On the other side it is well known that the spatial gradient is decreasing for an increasing number of layer. This phenomenon is known as the \emph{vanishing gradient problem}. Since the adversarial example is nothing more than a noise added to a training example, the prediction error depends on how much this noise is changing the loss function. This is reflected by the gradient. Thus our assumption is, that a smaller gradient should lead to a more robust network and that a smaller gradient is equivalent to a deeper network.
+
+
+
 \section{Results}
 
 \subsection{Comparison of the methods}
