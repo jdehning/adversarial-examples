@@ -367,7 +367,5 @@ if __name__ == "__main__":
     # for generating actual images of the adv examples
     #
 
-    #create_image_for_talk(amountImgs=1, model_number=2, cvd=False, save=True)
-    #create_image_for_talk(amountImgs=1, model_number=9, cvd=True, save=True)
     create_image_for_talk(amountImgs=5, model_number=2, cvd=False, save=True)
-    create_image_for_talk(amountImgs=5, model_number=9, cvd=True, save=True)
+    #create_image_for_talk(amountImgs=5, model_number=9, cvd=True, save=True)
