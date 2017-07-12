@@ -14,6 +14,7 @@ def show_img_noise(image, noise, predictImage=-1, predictNoise=-1, predictAdded=
     image = np.squeeze(image)
     noise = np.squeeze(noise)
     f, axarr = plt.subplots(1,3, figsize=constants.FIG_SIZE_TRIPLE, sharex=True)
+    #plt.axis('off')
     axarr[0].imshow(image, vmin=0, vmax=1, cmap=cmap)
     noiseScale = 1./np.max(noise)
     axarr[1].imshow(noise * noiseScale, vmin=-1, vmax=1, cmap=cmap)
@@ -27,11 +28,14 @@ def show_img_noise(image, noise, predictImage=-1, predictNoise=-1, predictAdded=
     if (predictNoise != -1):
         axarr[1].set_title('Prediction Noise: ' + str(predictNoise) + "; scaling: " + str(noiseScale)[:4])
     else:
-        axarr[1].set_title('Noise; scaling: ' + str(noiseScale)[:4])
+        axarr[1].set_title('Noise, scaling: ' + str(noiseScale)[:4])
     if (predictAdded != -1):
         axarr[2].set_title('Prediction: ' + str(predictAdded))
     else:
         axarr[2].set_title('Image + Noise')
+    for axis in axarr:
+        axis.set_axis_off()
+    plt.tight_layout()
     if save_as:
         plt.savefig(save_as)
     plt.show()

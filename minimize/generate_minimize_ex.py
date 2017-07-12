@@ -279,14 +279,14 @@ def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False, x0_fact
 
 if __name__ == "__main__":
 
-    model = load_model('../mnist_models/mnist_model2')
-    dataX, dataY = read_data_mnist()
+    #model = load_model('../mnist_models/mnist_model2')
+    #dataX, dataY = read_data_mnist()
 
-    #model = load_model("../keras_model_cat_dogs8")
-    #dataX, dataY = open_data_dogs_cat_float(end = 20, rows=128, cols=128)
+    model = load_model("../keras_model_cat_dogs8")
+    dataX, dataY = open_data_dogs_cat_float(end = 20, rows=128, cols=128)
     for i in range(0,1):
         rs = run_minimizer_inv(model, dataX[i], dataY[i], plot=True,
-                               save_as="../figures/adv_example_minimizer_cats_vs_dogs.svg")
+                               save_as="../figures/adv_example_minimizer_dogs_vs_cats.svg")
     """
     predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float64"), batch_size=1, verbose=0))
     predicNoise = np.argmax(model.predict(np.array([rs[0]], dtype="float64"), batch_size=1, verbose=0))

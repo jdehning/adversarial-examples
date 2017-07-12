@@ -1,5 +1,5 @@
 FIG_SIZE = (6, 4)
-FIG_SIZE_TRIPLE = (12, 4)
+FIG_SIZE_TRIPLE = (7.5, 2.5)
 import matplotlib as mpl
 
 fig_width_pt = 400  # Get this from LaTeX using \showthe\columnwidth normally 426
