@@ -342,9 +342,9 @@ def create_image_for_talk(amountImgs=1, model_number=1, cvd=False, save=False):
         print("image number: " + str(result["index"]))
         print("std: " + str(result["std_noise"]))
         if(save):
-            show_img_noise(result["image"], result["noise"], predictImage=prediction_arr[result["prediction_image"]], predictAdded=prediction_arr[result["prediction_adv_example"]], color = False, save_as = saveName.format(i, str(result["constant"]).replace(".", "")[:4] ))
+            show_img_noise(result["image"], result["noise"], predictImage=prediction_arr[result["prediction_image"]], predictAdded=prediction_arr[result["prediction_adv_example"]], std_noise=result["std_noise"], color = False, save_as = saveName.format(i, str(result["constant"]).replace(".", "")[:4] ))
         else:
-            show_img_noise(result["image"], result["noise"], predictImage=prediction_arr[result["prediction_image"]], predictAdded=prediction_arr[result["prediction_adv_example"]], color = False, save_as=False)
+            show_img_noise(result["image"], result["noise"], predictImage=prediction_arr[result["prediction_image"]], predictAdded=prediction_arr[result["prediction_adv_example"]], std_noise=result["std_noise"], color = False, save_as=False)
 
 #random_grad = np.random.randint(0,2,(1,28,28,1))*2-1
 
@@ -367,5 +367,7 @@ if __name__ == "__main__":
     # for generating actual images of the adv examples
     #
 
-    create_image_for_talk(amountImgs=1, model_number=2, cvd=False, save=True)
-    create_image_for_talk(amountImgs=1, model_number=9, cvd=True, save=True)
+    #create_image_for_talk(amountImgs=1, model_number=2, cvd=False, save=True)
+    #create_image_for_talk(amountImgs=1, model_number=9, cvd=True, save=True)
+    create_image_for_talk(amountImgs=5, model_number=2, cvd=False, save=True)
+    create_image_for_talk(amountImgs=5, model_number=9, cvd=True, save=True)
