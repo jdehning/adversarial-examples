@@ -115,6 +115,9 @@ In course of the increasing use of neural networks the understanding of their we
 
 Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. 
 
+\subsection{The Data Sets}
+
+We used two different data sets. The first is the MNIST data set downloaded from \emph{kaggle.com}, which contains a little more than 40,000 grayscale images of handwritten digits. Each image has $28\times 28$ pixels, resulting in a 784 dimensional vector representing one image. The second data set is a selection from the Asirra data set provided by \emph{kaggle.com} for the ``Dogs vs. Cats'' challenge. It contains 25,000 colored images of dogs and cats of different sizes. That's why we rescaled them to $128\times 128$ pixels each. With 3 color channels this leads to a 49,152 dimensional vector representing each image. 
 \section{Methods}
 
 \subsection{The used networks}
