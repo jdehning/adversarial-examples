@@ -107,9 +107,7 @@ In this work we generate adversarial examples for convolutional networks trained
 
 \section{Introduction}
 
-In general machine learning techniques are vulnerable to adversarial examples, meaning that they misclassify examples which are only slightly different to correctly classified ones. In many cases different machine learning techniques, even if trained on different subsets of the training data, misclassify the same adversarial examples. Thus adversarial examples seem to reveal a fundamental weakness of those machine learning techniques. Furthermore this suggests that these techniques are unable to learn the true underlying concepts for the correct classification, although they perform extremely well on the training data. They work well for naturally occurring data but fail if they visit points in space that are unlikely to occur in the data. This is problematic for computer vision where it is assumed that the Euclidean distance approximates the perceptual distance.
-
-In course of the increasing use of neural networks the understanding of their weaknesses is of growing interest. To be able to better understand the effects of adversarial examples on neural networks one first has to find ways how to create these. That's why we test two
+Neural networks 
 
 \subsection{Convolutional Neural Networks}
 
@@ -119,10 +117,19 @@ Convolutional neural networks are used to categorize images. The are composed of
 
 There are various ideas, that have already been used to create adversarial examples. In this project we tagged along the propositions of \citeauthor{paperGrad} who proposed to create a noise in the direction of the gradient of the loss function and \citeauthor{paperMinimize} who proposed to minimize the L2-norm of the noise under misclassification.
 \subsubsection*{Gradient method}
-In this method a noise is created in the direction of the gradient of the loss function to maximise the value of the loss function for the right prediction in order to for another 
+In this method a noise is created in the direction of the gradient with the given formular:
 \begin{align*}
 \vec{\eta} = \epsilon \cdot \operatorname{sign} \left( \nabla_{\vec{x}} J_{loss} \big \vert_{\vec{x}} \right) 
 \end{align*}
+with the noise $\vec{\eta}$, the image $\vec{x}$, the loss function of the neural network $J_{loss}$ for the true category, the gradient regarding the pixel input $\nabla_{\vec{x}}$ and a constant factor $\epsilon$.\\
+The label with the smallest value of the loss function $J_{loss}$ will be predicted by the neural network. The idea is to perturb the image in a way to increase this value for the true prediction in order to decrease the possibility, that the true label will be predicted. In order to achieve this one perturbs the image in direction of the gradient of the loss function with respect to the image input as this the direction in with the loss function will most increase. As the size of the gradient can vary strongly one uses just the direction and perturbs with a fixed ratio $\epsilon$. \cite{paperGrad}
+\subsubsection*{Minimize method}
+This method is based on the one presented on the method by \citeauthor{paperMinimize}, who proposed to minimize the L2-norm of the noise under the constrain, that the network performs a misclassification. As this is computationally very expensive as this needs to be done individually for each label in order to find the global minimum, we came up with the idea to minimize the L2-norm while maximizing the prediction of the model, hence the loss function. In order to do this at the same time we came up with the following
+\begin{align*}
+\min_{\vec{\eta}} \left(\frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} + c \cdot \sigma(\vec{\eta}) \right) & \\
+\end{align*}
+with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\simga(\vec{\eta}})$, a factor $x$ and a small factor $\delta$. 
+
 
 \subsubsection{Wide text (A level-3 head)}
 The \texttt{widetext} environment will make the text the width of the
