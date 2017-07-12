@@ -93,8 +93,8 @@ def read_data_mnist():
     return data_X, data_Y
 
 def open_data_dogs_cat_float(beg = 0, end = None, rows=128, cols=128, TRAIN_DIR = '../data/dog_vs_cats/train/'):
-    train_dogs = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'dog' in i][beg:end]
-    train_cats = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'cat' in i][beg:end]
+    train_dogs = [TRAIN_DIR + i for i in np.sort(os.listdir(TRAIN_DIR)) if 'dog' in i][beg:end]
+    train_cats = [TRAIN_DIR + i for i in np.sort(os.listdir(TRAIN_DIR)) if 'cat' in i][beg:end]
     images = train_dogs + train_cats
     data_Y = np.array([[1,0] for _ in range(len(train_dogs))] + [[0,1] for _ in range(len(train_cats))])
     data_X = prep_data_cat_data_float(images, rows=rows, cols=cols)
@@ -207,7 +207,7 @@ def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False, x0_fact
     inv_loss_func = create_inv_loss_func_for_minimize(model)
     c = c #put c = 1e3 for dogs vs cats
     d = 1
-    p = 4
+    p = 100
     imgShape = np.shape(image)
 
     bounds = np.zeros((image.size, 2), dtype="float64")
@@ -287,9 +287,9 @@ if __name__ == "__main__":
 
     model = load_model("../keras_model_cat_dogs8")
     dataX, dataY = open_data_dogs_cat_float(end = 20, rows=128, cols=128)
-    for i in range(0,1):
+    for i in range(2,5):
         rs = run_minimizer_inv(model, dataX[i], dataY[i], plot=True, c = 1e3,
-                               save_as="../figures/adv_example_minimizer_dogs_vs_cats_test.svg")
+                               save_as="../figures/adv_example_minimizer_dogs_vs_cats_L100_{}.svg".format(i))
     """
     predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float64"), batch_size=1, verbose=0))
     predicNoise = np.argmax(model.predict(np.array([rs[0]], dtype="float64"), batch_size=1, verbose=0))
