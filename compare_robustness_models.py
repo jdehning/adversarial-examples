@@ -5,6 +5,7 @@ import pickle, os, cv2, glob, scipy.stats
 import matplotlib.pyplot as plt
 import pandas as pd
 import copy, time
+import constants
 
 
 
@@ -338,5 +339,5 @@ def manager_for_mnist():
 if __name__ == "__main__":
     #manager_for_cats_vs_dogs()
     #manager_for_mnist()
-    compare_dics(cats=False)
+    compare_dics(cats=True)
     #compare_dics_gradient(cats = True)

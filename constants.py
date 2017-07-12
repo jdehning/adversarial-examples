@@ -2,11 +2,11 @@ FIG_SIZE = (6, 4)
 FIG_SIZE_TRIPLE = (12, 4)
 import matplotlib as mpl
 
-fig_width_pt = 426  # Get this from LaTeX using \showthe\columnwidth
+fig_width_pt = 400  # Get this from LaTeX using \showthe\columnwidth normally 426
 inches_per_pt = 1.0/72.27   # Convert pt to inch
 golden_mean = (5 ** 0.5 - 1.0) / 2.0  # Aesthetic ratio
 fig_width = fig_width_pt * inches_per_pt  # width in inches
-fig_height = fig_width * golden_mean * 1.3  # height in inches
+fig_height = fig_width * golden_mean  # height in inches
 fig_size = [fig_width, fig_height]
 
 mpl.rcParams['text.usetex'] = True
