@@ -27,7 +27,7 @@ def read_models():
     manner
     """
     model_files_cvd = np.sort(glob.glob("./grad_results/cvd*N1024_f0003.npy"))
-    model_files_mnist = np.sort(glob.glob("./grad_results/mnist*N1024_f02.npy"))
+    model_files_mnist = np.sort(glob.glob("./grad_results/mnist*N25000_f02.npy"))
 
     model_files_cvd = np.append(model_files_cvd[1:], [model_files_cvd[0]])
 
@@ -79,7 +79,7 @@ def get_percentage_false_class(arr_of_results):
 
 
 def plot_percentage_false_class(percentage, errors=None, xlabels=None, c=0.2):
-    fig, ax = plt.subplots(figsize=constants.FIG_SIZE)
+    fig, ax = plt.subplots()
     x = range(len(percentage))
     if np.all(errors != None):
         ax.bar(x, percentage, width=0.5, yerr=errors, alpha=0.8, ecolor="b")
@@ -89,7 +89,7 @@ def plot_percentage_false_class(percentage, errors=None, xlabels=None, c=0.2):
             ax.plot([x[i]-ewidith, x[i]+ewidith], [percentage[i] + errors[1][i], percentage[i] + errors[1][i]], "b")
     else:
         ax.bar(x, percentage)
-    #plt.tight_layout()
+    plt.tight_layout()
     ax.set_ylim(0, 1)
     ax.set_xlim(min(x) - 0.51, max(x) + 0.51)
     ax.set_xlabel("number of layers")

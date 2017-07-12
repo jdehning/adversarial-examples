@@ -107,11 +107,22 @@ In this work we generate adversarial examples for convolutional networks trained
 
 \section{Introduction}
 
-Neural networks 
+In general machine learning techniques are vulnerable to adversarial examples, meaning that they misclassify examples which are only slightly different to correctly classified ones. In many cases different machine learning techniques, even if trained on different subsets of the training data, misclassify the same adversarial examples. Thus adversarial examples seem to reveal a fundamental weakness of those machine learning techniques. Furthermore this suggests that these techniques are unable to learn the true underlying concepts for the correct classification, although they perform extremely well on the training data. They work well for naturally occurring data but fail if they visit points in space that are unlikely to occur in the data. This is problematic for computer vision where it is assumed that the Euclidean distance approximates the perceptual distance.
+
+In course of the increasing use of neural networks the understanding of their weaknesses is of growing interest. To be able to better understand the effects of adversarial examples on neural networks one first has to find ways how to create these. That's why we test two
 
 \subsection{Convolutional Neural Networks}
 
 Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. The results of the different convolutions are set as input for different ``maps'' in a convolutiona A pooling layer reduces the number of the previous by taking in our case the maximum of a square of 2x2 pixels. To counterbalance the reduced resolution the number of pixels, the nu
+
+\subsection{Methods for creating adversarial examples}
+
+There are various ideas, that have already been used to create adversarial examples. In this project we tagged along the propositions of \citeauthor{paperGrad} who proposed to create a noise in the direction of the gradient of the loss function and \citeauthor{paperMinimize} who proposed to minimize the L2-norm of the noise under misclassification.
+\subsubsection*{Gradient method}
+In this method a noise is created in the direction of the gradient of the loss function to maximise the value of the loss function for the right prediction in order to for another 
+\begin{align*}
+\vec{\eta} = \epsilon \cdot \operatorname{sign} \left( \nabla_{\vec{x}} J_{loss} \big \vert_{\vec{x}} \right) 
+\end{align*}
 
 \subsubsection{Wide text (A level-3 head)}
 The \texttt{widetext} environment will make the text the width of the
