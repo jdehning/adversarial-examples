@@ -89,7 +89,6 @@ def plot_percentage_false_class(percentage, errors=None, xlabels=None, c=0.2):
             ax.plot([x[i]-ewidith, x[i]+ewidith], [percentage[i] + errors[1][i], percentage[i] + errors[1][i]], "b")
     else:
         ax.bar(x, percentage)
-    plt.tight_layout()
     ax.set_ylim(0, 1)
     ax.set_xlim(min(x) - 0.51, max(x) + 0.51)
     ax.set_xlabel("number of layers")
@@ -99,23 +98,21 @@ def plot_percentage_false_class(percentage, errors=None, xlabels=None, c=0.2):
     ax.legend(["$\epsilon=" + str(c) + "$"])
     ax.set_xticks(x)
     ax.set_xticklabels(xlabels)
-
+    plt.tight_layout()
     return fig, ax
 
 if __name__ == "__main__":
     mnist, cvd = read_models()
     mnist_success, mnist_errors = get_percentage_false_class(mnist)
     cvd_success, cvd_errors = get_percentage_false_class(cvd)
-
-
     #print(mnist)
     #print(cvd)
     x_labels_mnist = np.array(["6", "7", "8"])
     x_labels_cvd = np.array(["13", "14", "15"])
     plot_percentage_false_class(mnist_success, mnist_errors, x_labels_mnist, 0.2)
-    plt.savefig("figures/mnist_grad_misclassificationrate.pdf")
+    plt.savefig("report/figures/mnist_grad_misclassificationrate.pdf")
     plot_percentage_false_class(cvd_success, cvd_errors, x_labels_cvd, 0.03)
-    plt.savefig("figures/cvd_grad_misclassificationrate.pdf")
+    plt.savefig("report/figures/cvd_grad_misclassificationrate.pdf")
 
 
 

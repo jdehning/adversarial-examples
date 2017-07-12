@@ -346,6 +346,48 @@ def create_image_for_talk(amountImgs=1, model_number=1, cvd=False, save=False):
         else:
             show_img_noise(result["image"], result["noise"], predictImage=prediction_arr[result["prediction_image"]], predictAdded=prediction_arr[result["prediction_adv_example"]], std_noise=result["std_noise"], color = False, save_as=False)
 
+    return
+
+
+def create_image_for_report(amountImgs=1, model_number=1, cvd=False, save=False):
+    if cvd:
+        saveName = "report/figures/cvd_model" + str(model_number) + "_I{}_f{}.pdf"
+        modelName = "keras_model_cat_dogs" + str(model_number)
+        dataX, dataY = open_data_dogs_cat_float(beg=0, end=amountImgs)
+        prediction_arr = ["dog", "cat"]
+    else:
+        saveName = "report/figures/mnist_model" + str(model_number) + "_I{}_f{}.pdf"
+        modelName = "./mnist_models/mnist_model" + str(model_number)
+        dataX, dataY = read_data_mnist()
+        prediction_arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    model = load_model(modelName)
+
+    if amountImgs == 1:
+        noises = return_min_noise_for_false_classification(model, np.array([dataX[0]]), np.array([dataY[0]]),
+                                                           np.array([0]))
+    else:
+        noises = return_min_noise_for_false_classification(model, dataX[:amountImgs], dataY[:amountImgs],
+                                                           np.arange(amountImgs))
+
+    for i in range(len(noises)):
+        result = noises[i]
+        if result["success"] == False:
+            continue
+        print("image number: " + str(result["index"]))
+        print("std: " + str(result["std_noise"]))
+        if (save):
+            show_img_noise(result["image"], result["noise"], predictImage=prediction_arr[result["prediction_image"]],
+                           predictAdded=prediction_arr[result["prediction_adv_example"]], std_noise=result["std_noise"],
+                           color=False, save_as=saveName.format(i, str(result["constant"]).replace(".", "")[:4]),
+                           prob_image=np.max(result["result_image"]), prob_adv_ex=np.max(result["result_adv_example"]))
+        else:
+            show_img_noise(result["image"], result["noise"], predictImage=prediction_arr[result["prediction_image"]],
+                           predictAdded=prediction_arr[result["prediction_adv_example"]], std_noise=result["std_noise"],
+                           color=False, save_as=False,
+                           prob_image=np.max(result["result_image"]), prob_adv_ex=np.max(result["result_adv_example"]))
+
+
 #random_grad = np.random.randint(0,2,(1,28,28,1))*2-1
 
 if __name__ == "__main__":
@@ -368,4 +410,5 @@ if __name__ == "__main__":
     #
 
     #create_image_for_talk(amountImgs=5, model_number=2, cvd=False, save=True)
-    create_image_for_talk(amountImgs=5, model_number=9, cvd=True, save=True)
+    #create_image_for_talk(amountImgs=5, model_number=9, cvd=True, save=True)
+    create_image_for_report(amountImgs=1, model_number=8, cvd=True, save=True)

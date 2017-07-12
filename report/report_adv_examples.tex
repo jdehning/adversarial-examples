@@ -61,7 +61,7 @@
 
 \preprint{APS/123-QED}
 
-\title{Adverserial Examples}% Force line breaks with \\
+\title{Adversarial Examples}% Force line breaks with \\
 %\thanks{A footnote to the article title}%
 
 \author{Jan Plank}
@@ -107,13 +107,14 @@ In this work we generate adversarial examples for convolutional networks trained
 
 \section{Introduction}
 
-In general machine learning techniques are vulnerable to adversarial examples, meaning that they misclassify examples which are only slightly different to correctly classified ones. In many cases different machine learning techniques, even if trained on different subsets of the training data, misclassify the same adversarial examples. Thus adversarial examples seem to reveal a fundamental weakness of those machine learning techniques. Furthermore this suggests that these techniques are unable to learn the true underlying concepts for the correct classification, although they perform extremely well on the training data. They work well for naturally occurring data but fail if they visit points in space that are unlikely to occur in the data. This is problematic for computer vision where it is assumed that the Euclidean distance approximates the perceptual distance.
-
-In course of the increasing use of neural networks the understanding of their weaknesses is of growing interest. To be able to better understand the effects of adversarial examples on neural networks one first has to find ways how to create these. That's why we test two
 
 \subsection{Convolutional Neural Networks}
 
-Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. 
+Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. The results of the different convolutions are set as input for different ``maps'' in a convolutional layer. Between convolutional layers, pooling layers are inserted. They reduce the number of the previous by taking the maximum of a square of 2x2 pixels in our case. To counterbalance the reduced resolution the number of pixels, the number of maps of the following convolutional layers are increased.
+
+Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used.
+
+At the end some fully connected layers are inserted. There every neuron is connected to every other one.
 
 \section{Methods}
 
@@ -127,7 +128,7 @@ There are various ideas, that have already been used to create adversarial examp
 \subsubsection*{Gradient method}
 In this method a noise is created in the direction of the gradient with the given formular:
 \begin{align*}
-\vec{\eta} = \epsilon \cdot \operatorname{sign} \left( \nabla_{\vec{x}} J_{loss} \big \vert_{\vec{x}} \right) 
+\vec{\eta} = \epsilon \cdot \operatorname{sign} \left( \nabla_{\vec{x}} J_{loss} \big \vert_{\vec{x}} \right)
 \end{align*}
 with the noise $\vec{\eta}$, the image $\vec{x}$, the loss function of the neural network $J_{loss}$ for the true category, the gradient regarding the pixel input $\nabla_{\vec{x}}$ and a constant factor $\epsilon$.\\
 The label with the smallest value of the loss function $J_{loss}$ will be predicted by the neural network. The idea is to perturb the image in a way to increase this value for the true prediction in order to decrease the possibility, that the true label will be predicted. In order to achieve this one perturbs the image in direction of the gradient of the loss function with respect to the image input as this the direction in with the loss function will most increase. As the size of the gradient can vary strongly one uses just the direction and perturbs with a fixed ratio $\epsilon$. \cite{paperGrad}
@@ -138,86 +139,63 @@ This method is based on the one presented on the method by \citeauthor{paperMini
 \end{align*}
 with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\sigma (\vec{\eta})$, a scaling factor $c$ and a small factor $\delta$. As the goal is to minimize the L2-norm we chose the standard deviation to keep this formula scalable for different input dimensions (which is the L2-norm divided by square root of N). To minimize the prediction one could just simply add the prediction linearly, however better results were accomplished but adding the nonlinearity of $1/(1-p)$, as predictions close to one (which are unwanted) are stronger panelized. However as $p$ can reach a value of $1$ the function $1/(1 + \delta - p)$ was chosen with $\delta \ll 1$ in order to prevent devision by zero.
 
+\section{Results}
 
+\subsection{Comparison of the methods}
+
+In the figure \ref{fig:examples} different examples of adversarial examples, created with the two different methods are shown. We remark that the standard deviation of the examples created with the minimizer method are smaller.
+
+\begin{figure}
+\centering
+\showthe\columnwidth
+\includegraphics[width = 1\linewidth]{figures/mnist_model2_I0_f0277.pdf}
+\includegraphics[width = 1\linewidth]{figures/adv_example_minimizer_mnist_0.pdf}
+\includegraphics[width = 1\linewidth]{figures/cvd_model9_I0_f0003.pdf}
+\includegraphics[width = 1\linewidth]{figures/adv_example_minimizer_dogs_vs_cats_0.pdf}
+\caption{Comparison of the distribution of the minimized values of different networks for the MNIST dataset.}
+\label{fig:examples}
+\end{figure}
+
+\begin{figure}
+\centering
+\showthe\columnwidth
+\includegraphics[width = 1\linewidth]{figures/mnist_grad_misclassificationrate.pdf}
+\caption{The misclassification rate of different networks for adveraerial examples created with the gradient method with a fixed $\epsilon$ of 0.2 for the MNIST dataset.}
+\label{fig:comp_grad_cats_vs_dogs}
+\end{figure}
+
+\begin{figure}
+\centering
+\showthe\columnwidth
+\includegraphics[width = 1\linewidth]{figures/cvd_grad_misclassificationrate.pdf}
+\caption{The misclassification rate of different networks for adversarial examples created with the gradient method with a fixed $\epsilon$ of 0.03 for the Cats vs Dogs dataset.}
+\label{fig:comp_grad_cats_vs_dogs}
+\end{figure}
+
+\begin{figure}
+\centering
+\showthe\columnwidth
+\includegraphics[width = 1\linewidth]{figures/plot_mnist_robustness_minimizer.pdf}
+\caption{Comparison of the distribution of the minimized values of different networks for the MNIST dataset.}
+\label{fig:comp_min_mnist}
+\end{figure}
+
+\begin{figure}
+\centering
+\showthe\columnwidth
+\includegraphics[width = 1\linewidth]{figures/plot_cats_vs_dogs_robustness_minimizer.pdf}
+\caption{Comparison of the distribution of the minimized values of different networks for the Cats vs Dogs dataset.}
+\label{fig:comp_min_cats_vs_dogs}
+\end{figure}
 
 \section{Conclusion}
 
 As visible in figure \ref{fig:} adversarial examples could successfully be created with both presented methods, which are just sightly to not visible at all using the human eye. Overall the minimizer seems to produces better results, as the standard deviation of the noises is in average smaller compared to the onces using the gradient method. This is achieved at the cost of higher computation time. The gradient method produces decent results in short time, while the minimizer produces better results at higher computational cost. \\
 The hypothesis of the dependency of the robustness of the networks to the deepness (number of layers) of the networks could not be proven as seen in figure \ref{fig:}. However for the networks trained on the dogs vs cats dataset such a trend was visible. In order to actually conclude the truth of this hypothesis, one would need to train a lot more networks with different deepness. As our computational power was limited, this was not possible to us. However we could show that small changes in deepness will not always but can make a change in robustness against adversarial examples.\\
 Furthermore, it seems that networks get a lot more vulnerable regarding adversarial examples the large the input dimension is. The dogs vs cats trained networks, which had an input dimension of $(128 \times 128 \times 3)$ produced adversarial examples which were not visible at all, while the MNIST trained networks with an input dimension of $(28 \times 28 \times 1)$ produced noises with which one could still clearly see the original shape, however the noise was visible in the adversarial example (see figure \ref{fig:}).\\
+This sort of network mimic the visual areas of mammals. There neurons typically respond to a small region of the visual field called receptive field. The size of the receptive fields increase in areas higher in the visual hierarchy, like in a convolutional network with pooling layers.
 
-\subsubsection{Wide text (A level-3 head)}
-The \texttt{widetext} environment will make the text the width of the
-full page, as on page~\pageref{eq:wideeq}. (Note the use the
-\verb+\pageref{#1}+ command to refer to the page number.) 
-\paragraph{Note (Fourth-level head is run in)}
-The width-changing commands only take effect in two-column formatting. 
-There is no effect if text is in a single column.
 
-\subsection{\label{sec:citeref}Citations and References}
-A citation in text uses the command \verb+\cite{#1}+ or
-\verb+\onlinecite{#1}+ and refers to an entry in the bibliography. 
-An entry in the bibliography is a reference to another document.
-
-\subsubsection{Citations}
-Because REV\TeX\ uses the \verb+natbib+ package of Patrick Daly, 
-the entire repertoire of commands in that package are available for your document;
-see the \verb+natbib+ documentation for further details. Please note that
-REV\TeX\ requires version 8.31a or later of \verb+natbib+.
-
-\paragraph{Syntax}
-The argument of \verb+\cite+ may be a single \emph{key}, 
-or may consist of a comma-separated list of keys.
-The citation \emph{key} may contain 
-letters, numbers, the dash (-) character, or the period (.) character. 
-New with natbib 8.3 is an extension to the syntax that allows for 
-a star (*) form and two optional arguments on the citation key itself.
-The syntax of the \verb+\cite+ command is thus (informally stated)
-\begin{quotation}\flushleft\leftskip1em
-\verb+\cite+ \verb+{+ \emph{key} \verb+}+, or\\
-\verb+\cite+ \verb+{+ \emph{optarg+key} \verb+}+, or\\
-\verb+\cite+ \verb+{+ \emph{optarg+key} \verb+,+ \emph{optarg+key}\ldots \verb+}+,
-\end{quotation}\noindent
-where \emph{optarg+key} signifies 
-\begin{quotation}\flushleft\leftskip1em
-\emph{key}, or\\
-\texttt{*}\emph{key}, or\\
-\texttt{[}\emph{pre}\texttt{]}\emph{key}, or\\
-\texttt{[}\emph{pre}\texttt{]}\texttt{[}\emph{post}\texttt{]}\emph{key}, or even\\
-\texttt{*}\texttt{[}\emph{pre}\texttt{]}\texttt{[}\emph{post}\texttt{]}\emph{key}.
-\end{quotation}\noindent
-where \emph{pre} and \emph{post} is whatever text you wish to place 
-at the beginning and end, respectively, of the bibliographic reference
-(see Ref.~[\onlinecite{witten2001}] and the two under Ref.~[\onlinecite{feyn54}]).
-(Keep in mind that no automatic space or punctuation is applied.)
-It is highly recommended that you put the entire \emph{pre} or \emph{post} portion 
-within its own set of braces, for example: 
-\verb+\cite+ \verb+{+ \texttt{[} \verb+{+\emph{text}\verb+}+\texttt{]}\emph{key}\verb+}+.
-The extra set of braces will keep \LaTeX\ out of trouble if your \emph{text} contains the comma (,) character.
-
-The star (*) modifier to the \emph{key} signifies that the reference is to be 
-merged with the previous reference into a single bibliographic entry, 
-a common idiom in APS and AIP articles (see below, Ref.~[\onlinecite{epr}]). 
-When references are merged in this way, they are separated by a semicolon instead of 
-the period (full stop) that would otherwise appear.
-
-\paragraph{Eliding repeated information}
-When a reference is merged, some of its fields may be elided: for example, 
-when the author matches that of the previous reference, it is omitted. 
-If both author and journal match, both are omitted.
-If the journal matches, but the author does not, the journal is replaced by \emph{ibid.},
-as exemplified by Ref.~[\onlinecite{epr}]. 
-These rules embody common editorial practice in APS and AIP journals and will only
-be in effect if the markup features of the APS and AIP Bib\TeX\ styles is employed.
-
-\paragraph{The options of the cite command itself}
-Please note that optional arguments to the \emph{key} change the reference in the bibliography, 
-not the citation in the body of the document. 
-For the latter, use the optional arguments of the \verb+\cite+ command itself:
-\verb+\cite+ \texttt{*}\allowbreak
-\texttt{[}\emph{pre-cite}\texttt{]}\allowbreak
-\texttt{[}\emph{post-cite}\texttt{]}\allowbreak
-\verb+{+\emph{key-list}\verb+}+.
 
 \end{document}
 %
