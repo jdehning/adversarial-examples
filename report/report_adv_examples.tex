@@ -115,6 +115,12 @@ In course of the increasing use of neural networks the understanding of their we
 
 Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. 
 
+\section{Methods}
+
+\subsection{The used networks}
+
+JAN
+
 \subsection{Methods for creating adversarial examples}
 
 There are various ideas, that have already been used to create adversarial examples. In this project we tagged along the propositions of \citeauthor{paperGrad} who proposed to create a noise in the direction of the gradient of the loss function and \citeauthor{paperMinimize} who proposed to minimize the L2-norm of the noise under misclassification.
@@ -130,7 +136,7 @@ This method is based on the one presented on the method by \citeauthor{paperMini
 \begin{align*}
 \min_{\vec{\eta}} \left(\frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} + c \cdot \sigma(\vec{\eta}) \right) & \\
 \end{align*}
-with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\sigma (\vec{\eta})$, a factor $x$ and a small factor $\delta$. As the goal is to minimize the L2-norm we chose the standard deviation to keep this formula scalable for different input dimensions (which is the L2-norm divided by square root of N). To minimize the prediction one could just simply add the prediction linearly, however better results were accomplished but adding the nonlinearity of $1/(1-p)$, as predictions close to one (which are unwanted) are stronger panelized.
+with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\sigma (\vec{\eta})$, a scaling factor $c$ and a small factor $\delta$. As the goal is to minimize the L2-norm we chose the standard deviation to keep this formula scalable for different input dimensions (which is the L2-norm divided by square root of N). To minimize the prediction one could just simply add the prediction linearly, however better results were accomplished but adding the nonlinearity of $1/(1-p)$, as predictions close to one (which are unwanted) are stronger panelized. However as $p$ can reach a value of $1$ the function $1/(1 + \delta - p)$ was chosen with $\delta \ll 1$ in order to prevent devision by zero.
 
 
 \subsubsection{Wide text (A level-3 head)}
