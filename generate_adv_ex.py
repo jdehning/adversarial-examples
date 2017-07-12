@@ -27,8 +27,8 @@ from keras import backend as K
 
 
 def open_data_dogs_cat_float(beg = 0, end = None, rows=128, cols=128, TRAIN_DIR = './data/dog_vs_cats/train/'):
-    train_dogs = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'dog' in i][beg:end]
-    train_cats = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'cat' in i][beg:end]
+    train_dogs = [TRAIN_DIR + i for i in np.sort(os.listdir(TRAIN_DIR)) if 'dog' in i][beg:end]
+    train_cats = [TRAIN_DIR + i for i in np.sort(os.listdir(TRAIN_DIR)) if 'cat' in i][beg:end]
     images = train_dogs + train_cats
     data_Y = np.array([[1,0] for _ in range(len(train_dogs))] + [[0,1] for _ in range(len(train_cats))])
     data_X = prep_data_cat_data_float(images, rows=rows, cols=cols)
@@ -367,5 +367,5 @@ if __name__ == "__main__":
     # for generating actual images of the adv examples
     #
 
-    create_image_for_talk(amountImgs=5, model_number=2, cvd=False, save=True)
-    #create_image_for_talk(amountImgs=5, model_number=9, cvd=True, save=True)
+    #create_image_for_talk(amountImgs=5, model_number=2, cvd=False, save=True)
+    create_image_for_talk(amountImgs=5, model_number=9, cvd=True, save=True)
