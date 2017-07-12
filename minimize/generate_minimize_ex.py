@@ -74,6 +74,24 @@ def create_inv_loss_func_for_minimize(model):
         return 1/(1.001-prediction[np.argmax(target)]+1e-6)
     return loss_func
 
+
+
+def read_data_mnist():
+    """
+    read the MNIST traning set\n
+    \n
+    returns: (dataX, dataY)\n
+    dataX: array of (28, 28, 1) arrays which are the image pixels. Each
+    pixel has an intensity in range [0,1]\n
+    dataY: classification: [1, ..., 9]\n
+    """
+    train = pd.read_csv("../data/train.csv").values
+    data_X = train[:, 1:].reshape(train.shape[0], 28, 28, 1)
+    data_X = data_X.astype("float32")
+    data_X /= 255.0
+    data_Y = keras.utils.to_categorical(train[:, 0])
+    return data_X, data_Y
+
 def open_data_dogs_cat_float(beg = 0, end = None, rows=128, cols=128, TRAIN_DIR = '../data/dog_vs_cats/train/'):
     train_dogs = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'dog' in i][beg:end]
     train_cats = [TRAIN_DIR + i for i in os.listdir(TRAIN_DIR) if 'cat' in i][beg:end]
@@ -185,7 +203,7 @@ def run_minimizer(model, images, truePredictions, num_to_predict = 3):
         prediction_im = np.argmax(truePrediction)
         show_img_noise(image, tempR, predictImage=prediction_im, predictAdded=prediction_adv_ex)
 
-def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False, x0_factors = [0.1]):
+def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False, x0_factors = [0.1], save_as = False):
     inv_loss_func = create_inv_loss_func_for_minimize(model)
     c = c #put c = 1e3 for dogs vs cats
     d = 1
@@ -246,7 +264,8 @@ def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False, x0_fact
         print("Number of iterations: {}, {}".format(final_res_optimize.nit, final_res_optimize.nfev))
         print("std r: {:.5f}, num predicted {}, probability: {:.1f}%".format(np.std(noise), prediction_adv_ex,
                                                                              np.max(result_adv_ex) * 100))
-        show_img_noise(image, noise, predictImage=prediction_image, predictAdded=prediction_adv_ex)
+        show_img_noise(image, noise, predictImage=prediction_image, predictAdded=prediction_adv_ex,
+                       save_as = save_as)
     return_dic = {"image_target": image_target,
                   "result_image": result_image,
                   "prediction_image": prediction_image,
@@ -260,13 +279,14 @@ def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False, x0_fact
 
 if __name__ == "__main__":
 
-    #model = load_model('../keras_model1')
-    #dataX, dataY = read_data_mnist()
+    model = load_model('../mnist_models/mnist_model2')
+    dataX, dataY = read_data_mnist()
 
-    model = load_model("../keras_model_cat_dogs8")
-    dataX, dataY = open_data_dogs_cat_float(end = 20, rows=128, cols=128)
-    for i in range(0,10):
-        rs = run_minimizer_inv(model, dataX[i], dataY[i], plot=True)
+    #model = load_model("../keras_model_cat_dogs8")
+    #dataX, dataY = open_data_dogs_cat_float(end = 20, rows=128, cols=128)
+    for i in range(0,1):
+        rs = run_minimizer_inv(model, dataX[i], dataY[i], plot=True,
+                               save_as="../figures/adv_example_minimizer_cats_vs_dogs.svg")
     """
     predicImg = np.argmax(model.predict(np.array([dataX[1]], dtype="float64"), batch_size=1, verbose=0))
     predicNoise = np.argmax(model.predict(np.array([rs[0]], dtype="float64"), batch_size=1, verbose=0))

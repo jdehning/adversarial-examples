@@ -209,7 +209,7 @@ def read_models_gradient(cats):
 
     results = []
 
-    for filename in model_files:
+    for filename in sorted(model_files, key = lambda x: int(x.split(".")[1].split("_")[-3][5:])):
         results.append(np.load(filename))
 
     return np.array(results)
@@ -272,8 +272,10 @@ def compare_dics_gradient(cats = False):
     plt.xlabel("Minimizer value")
     plt.tight_layout()
     if cats:
+        pass
         #plt.savefig("figures/plot_cats_vs_dogs_robustness_minimizer.pdf")
     else:
+        pass
         #plt.savefig("figures/plot_mnist_robustness_minimizer.pdf")
     plt.show()
 
@@ -336,5 +338,5 @@ def manager_for_mnist():
 if __name__ == "__main__":
     #manager_for_cats_vs_dogs()
     #manager_for_mnist()
-    compare_dics(cats=True)
-    #compare_dics_gradient(cats = False)
+    compare_dics(cats=False)
+    #compare_dics_gradient(cats = True)
