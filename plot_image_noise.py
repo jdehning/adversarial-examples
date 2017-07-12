@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import constants
 
-def show_img_noise(image, noise, predictImage=-1, predictNoise=-1, predictAdded=-1, color = False, save_as = False, std_noise=-1):
+def show_img_noise(image, noise, predictImage=-1, predictNoise=-1, predictAdded=-1, color = False, save_as = False, std_noise=-1,
+                   prob_image = None, prob_adv_ex = None):
     """
     plots the image, the noise and the added image + noise besides eachother to
     compare those
@@ -36,7 +37,13 @@ def show_img_noise(image, noise, predictImage=-1, predictNoise=-1, predictAdded=
     for axis in axarr:
         axis.set_axis_off()
     if std_noise >= 0:
-        plt.figtext(0.51, 0.08, "std: {:.3f}".format(std_noise), ha='center', size=14)
+        plt.figtext(0.52, 0.08, "std: {:.3f}".format(std_noise), ha='center', size=10)
+
+    if prob_image is not None:
+        plt.figtext(0.2, 0.08, "probability: {:.0f}\%".format(prob_image*100), ha='center', size=10)
+    if prob_adv_ex is not None:
+        plt.figtext(0.855, 0.08, "probability: {:.0f}\%".format(prob_adv_ex*100), ha='center', size=10)
+
     plt.tight_layout()
     if save_as:
         plt.savefig(save_as)
