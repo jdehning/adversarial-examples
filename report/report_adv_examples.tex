@@ -128,7 +128,7 @@ This method is based on the one presented on the method by \citeauthor{paperMini
 \begin{align*}
 \min_{\vec{\eta}} \left(\frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} + c \cdot \sigma(\vec{\eta}) \right) & \\
 \end{align*}
-with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\simga(\vec{\eta}})$, a factor $x$ and a small factor $\delta$. As the goal is to minimize the L2-norm we chose the standard deviation to keep this formula scalable for different input dimensions (which is the L2-norm divided by square root of N). To minimize the prediction one could just simply add the prediction linearly, however better results were accomplished but adding the nonlinearity of $1/(1-p)$, as predictions close to one (which are unwanted) are stronger panelized.
+with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\sigma (\vec{\eta})$, a factor $x$ and a small factor $\delta$. As the goal is to minimize the L2-norm we chose the standard deviation to keep this formula scalable for different input dimensions (which is the L2-norm divided by square root of N). To minimize the prediction one could just simply add the prediction linearly, however better results were accomplished but adding the nonlinearity of $1/(1-p)$, as predictions close to one (which are unwanted) are stronger panelized.
 
 
 \subsubsection{Wide text (A level-3 head)}
