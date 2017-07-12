@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm #tqdm is a library to display a progress bar
 import scipy.optimize, scipy.stats
 import pickle, os, sys, cv2
+from plot_image_noise import show_img_noise
 
 #instanciate the session at the loading of this module. Could perhaps lead to problems later? But instanciating the
 #session in a function doesn't work for unknown reasons.
@@ -161,15 +162,19 @@ def return_accuracy_of_model_for_given_noise_added(model, images, truePrediction
 
     return np.array(dics)
 
-def return_min_noise_for_false_classification(model, images, results):
+def return_min_noise_for_false_classification(model, images, results, indicies):
     """
     for a given model, images and results, this function finds the minimum noise needed to get a false classification.
     It returns an array of the noises. If no adv example can be found, the noise is composed of np.nan
     """
 
-    n_iter_basinhopping = 1 #put to 1 for fast results, to 10 for better ones
+    n_iter_basinhopping = 10 #put to 1 for fast results, to 10 for better ones
     gradients = get_gradient(model, images, results)
     noise_arr = []
+
+    batch_size = min(len(images), 128)
+    result_images = model.predict(images.astype(dtype="float32"), batch_size=batch_size, verbose=0)
+        
 
     for i in tqdm(range(len(images))):
         grad = gradients[i]
@@ -177,7 +182,7 @@ def return_min_noise_for_false_classification(model, images, results):
         #grad = np.random.randint(0,2,(1,28,28,1))*2-1
         if np.sum(grad) == 0:
             print("gradient is zero, won't find adv. ex.")
-            noise_arr.append(np.full(images[0].shape, np.nan))
+            noise_arr.append({"success": False})
             continue
 
         def modify_single_image(image, noise_ratio):
@@ -209,15 +214,45 @@ def return_min_noise_for_false_classification(model, images, results):
                                                        minimizer_kwargs = {"method":"L-BFGS-B",
                                                                            "options": {"eps":0.001, "ftol":1e-5}})
         #print(i, res_optimization.x[0])
+        modified_image = modify_single_image(images[i], res_optimization.x[0])
+        noise = modified_image - images[i]
+        image_target = np.argmax(results[i])
+        prediction_image = np.argmax(result_images[i])
+        result_noise = model.predict(np.array([noise], dtype="float32"), batch_size=1, verbose=0)
+        prediction_noise = np.argmax(result_noise)
+        result_adv_ex = model.predict(np.array([modified_image], dtype="float32"), batch_size=1, verbose=0)
+        prediction_adv_ex = np.argmax(result_adv_ex)
         if not min_func(res_optimization.x) < 1:
             print("Couldn't find adv. example")
             noise_arr.append({"image": np.full(images[i].shape, np.nan),
-                              "min_factor":res_optimization.x[0],
+                              "noise": np.full(images[i].shape, np.nan),
+                              "image_target": image_target,
+                              "result_image": result_images[i],
+                              "result_noise": result_noise,
+                              "prediction_noise": prediction_noise,
+                              "prediction_image": prediction_image,
+                              "result_adv_example": result_adv_ex,
+                              "prediction_adv_example": prediction_adv_ex,
+                              "constant": res_optimization.x[0],
+                              "std_noise": np.std(noise),
+                              "mean_noise": np.mean(noise),
+                              "index": indicies[i],
                               "success": False })
         else:
-            noise_arr.append({"image": np.array(modify_single_image(images[i], res_optimization.x[0])-images[i]),
-                              "min_factor":res_optimization.x[0],
-                              "success": True })
+            noise_arr.append({"image": images[i],
+                              "noise": np.array(modify_single_image(images[i], res_optimization.x[0])-images[i]),
+                              "image_target": image_target,
+                              "result_image": result_images[i],
+                              "prediction_image": prediction_image,
+                              "result_noise": result_noise,
+                              "prediction_noise": prediction_noise,
+                              "result_adv_example": result_adv_ex,
+                              "prediction_adv_example": prediction_adv_ex,
+                              "constant": res_optimization.x[0],
+                              "std_noise": np.std(noise),
+                              "mean_noise": np.mean(noise),
+                              "index": indicies[i],
+                              "success": image_target==prediction_image and image_target!=prediction_adv_ex })
     return np.array(noise_arr)
 
 def analyse_min_noise(model, num_images_to_analyse):
@@ -255,27 +290,15 @@ def run_gradient(model, image, truePrediction, num_images=1000):
                   "minimize_result": final_res_optimize.fun,
                   "std_noise": np.std(noise)}
 
-#random_grad = np.random.randint(0,2,(1,28,28,1))*2-1
-
-if __name__ == "__main__":
-    if (len(sys.argv) != 3):
-        print("Usage: python3 generate_adv_ex.py factor_noise model_number")
-        sys.exit(1)
-
-    factor_noise = float(sys.argv[1])
-    amountImgs = 25000
-
-    dataX, dataY = read_data_mnist()
-    #dataX, dataY = open_data_dogs_cat_float(beg = 0, end = amountImgs)
-    
-
-    #modelName = "9" #1,2,3 for mnist, 8,9,10 for cats vs dogs
-    modelName = str(sys.argv[2])
-
-    saveName = "grad_results/mnist_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
-    modelName = "./mnist_models/mnist_model" + modelName
-    #saveName = "grad_results/cvd_model" + modelName + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
-    #modelName = "keras_model_cat_dogs" + modelName
+def run_classification_const_c(amountImgs, factor_noise, model_number=1, cvd=False):
+    if cvd:
+        saveName = "grad_results/cvd_model" + str(model_number) + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
+        modelName = "keras_model_cat_dogs" + str(model_number)
+        dataX, dataY = open_data_dogs_cat_float(beg = 0, end = amountImgs)
+    else:
+        saveName = "grad_results/mnist_model" + str(model_number) + "_N" + str(amountImgs) + "_f" + str(factor_noise).replace(".", "")
+        modelName = "./mnist_models/mnist_model" + str(model_number)
+        dataX, dataY = read_data_mnist()
 
     print("Generating adversarial examples using the gadient method using a factor of " + str(factor_noise))
     print("processing model: " + modelName)
@@ -288,13 +311,61 @@ if __name__ == "__main__":
             count_correct_prediction += 1
         if result["success"] == True:
             count_success += 1
-    print("amount success: " + str(count_success/count_correct_prediction) + "%")
-    print(count_correct_prediction/amountImgs)
-    #print(saveName)
+    print("amount misclassification of adv ex: " + str(count_success/count_correct_prediction) + "%")
+    print("amount correct prediction: " + str(count_correct_prediction/amountImgs) + "%")
     np.save(saveName, results)
-    #return_accuracy_of_model_for_given_noise_added(model)
-    #print(analyse_min_noise(model, 10))
+
+def create_image_for_talk(amountImgs=1, model_number=1, cvd=False, save=False):
+    if cvd:
+        saveName = "figures/cvd_model" + str(model_number) + "_I{}_f{}.svg"
+        modelName = "keras_model_cat_dogs" + str(model_number)
+        dataX, dataY = open_data_dogs_cat_float(beg = 0, end = amountImgs)
+        prediction_arr = ["dog", "cat"]
+    else:
+        saveName = "figures/mnist_model" + str(model_number) + "_I{}_f{}.svg"
+        modelName = "./mnist_models/mnist_model" + str(model_number)
+        dataX, dataY = read_data_mnist()   
+        prediction_arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    model = load_model(modelName)
+
+    if amountImgs == 1:
+        noises = return_min_noise_for_false_classification(model, np.array([dataX[0]]), np.array([dataY[0]]), np.array([0]))
+    else:
+        noises = return_min_noise_for_false_classification(model, dataX[:amountImgs], dataY[:amountImgs], np.arange(amountImgs))
+
+
+    for i in range(len(noises)):
+        result = noises[i]
+        if result["success"] == False:
+            continue
+        print("image number: " + str(result["index"]))
+        print("std: " + str(result["std_noise"]))
+        if(save):
+            show_img_noise(result["image"], result["noise"], predictImage=prediction_arr[result["prediction_image"]], predictAdded=prediction_arr[result["prediction_adv_example"]], color = False, save_as = saveName.format(i, str(result["constant"]).replace(".", "")[:4] ))
+        else:
+            show_img_noise(result["image"], result["noise"], predictImage=prediction_arr[result["prediction_image"]], predictAdded=prediction_arr[result["prediction_adv_example"]], color = False, save_as=False)
+
+#random_grad = np.random.randint(0,2,(1,28,28,1))*2-1
+
+if __name__ == "__main__":
+
+    #
+    # for generating the classification dataset
+    #
+    #if (len(sys.argv) != 3):
+    #   print("Usage: python3 generate_adv_ex.py factor_noise model_number")
+    #    sys.exit(1)
+
+    #factor_noise = float(sys.argv[1])
+    #model_number = str(sys.argv[2])
+    #amountImgs = 25000
+    #run_classification_const_c(amountImgs, factor_noise, model_number, False)
+
     
+    #
+    # for generating actual images of the adv examples
+    #
 
-
-
+    create_image_for_talk(amountImgs=1, model_number=2, cvd=False, save=True)
+    create_image_for_talk(amountImgs=1, model_number=9, cvd=True, save=True)
