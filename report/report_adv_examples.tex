@@ -61,7 +61,7 @@
 
 \preprint{APS/123-QED}
 
-\title{Adversarial Examples}% Force line breaks with \\
+\title{Adverserial Examples}% Force line breaks with \\
 %\thanks{A footnote to the article title}%
 
 \author{Jan Plank}
@@ -113,7 +113,7 @@ In course of the increasing use of neural networks the understanding of their we
 
 \subsection{Convolutional Neural Networks}
 
-Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. The results of the different convolutions are set as input for different ``maps'' in a convolutiona A pooling layer reduces the number of the previous by taking in our case the maximum of a square of 2x2 pixels. To counterbalance the reduced resolution the number of pixels, the nu
+Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. 
 
 \subsection{Methods for creating adversarial examples}
 
@@ -126,11 +126,11 @@ In this method a noise is created in the direction of the gradient with the give
 with the noise $\vec{\eta}$, the image $\vec{x}$, the loss function of the neural network $J_{loss}$ for the true category, the gradient regarding the pixel input $\nabla_{\vec{x}}$ and a constant factor $\epsilon$.\\
 The label with the smallest value of the loss function $J_{loss}$ will be predicted by the neural network. The idea is to perturb the image in a way to increase this value for the true prediction in order to decrease the possibility, that the true label will be predicted. In order to achieve this one perturbs the image in direction of the gradient of the loss function with respect to the image input as this the direction in with the loss function will most increase. As the size of the gradient can vary strongly one uses just the direction and perturbs with a fixed ratio $\epsilon$. \cite{paperGrad}
 \subsubsection*{Minimize method}
-This method is based on the one presented on the method by \citeauthor{paperMinimize}, who proposed to minimize the L2-norm of the noise under the constrain, that the network performs a misclassification. As this is computationally very expensive as this needs to be done individually for each label in order to find the global minimum, we came up with the idea to minimize the L2-norm while maximizing the prediction of the model, hence the loss function. In order to do this at the same time we came up with the following
+This method is based on the one presented on the method by \citeauthor{paperMinimize}, who proposed to minimize the L2-norm of the noise under the constrain, that the network performs a misclassification. As this is computationally very expensive as this needs to be done individually for each label in order to find the global minimum, we came up with the idea to minimize the L2-norm while minimizing the prediction of the true label, hence maximizing the loss function. In order to do this at the same time we came up with the following
 \begin{align*}
 \min_{\vec{\eta}} \left(\frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} + c \cdot \sigma(\vec{\eta}) \right) & \\
 \end{align*}
-with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\sigma (\vec{\eta})$, a factor $x$ and a small factor $\delta$. 
+with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\sigma (\vec{\eta})$, a factor $x$ and a small factor $\delta$. As the goal is to minimize the L2-norm we chose the standard deviation to keep this formula scalable for different input dimensions (which is the L2-norm divided by square root of N). To minimize the prediction one could just simply add the prediction linearly, however better results were accomplished but adding the nonlinearity of $1/(1-p)$, as predictions close to one (which are unwanted) are stronger panelized.
 
 
 \subsubsection{Wide text (A level-3 head)}
