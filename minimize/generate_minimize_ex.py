@@ -264,6 +264,9 @@ def run_minimizer_inv(model, image, truePrediction, c = 1e2, plot=False, x0_fact
         print("Number of iterations: {}, {}".format(final_res_optimize.nit, final_res_optimize.nfev))
         print("std r: {:.5f}, num predicted {}, probability: {:.1f}%".format(np.std(noise), prediction_adv_ex,
                                                                              np.max(result_adv_ex) * 100))
+        if "cat" in save_as:
+            prediction_image = "cat" if prediction_image == 1 else "dog"
+            prediction_adv_ex = "cat" if prediction_adv_ex == 1 else "dog"
         show_img_noise(image, noise, predictImage=prediction_image, predictAdded=prediction_adv_ex,
                        save_as = save_as)
     return_dic = {"image_target": image_target,
