@@ -187,7 +187,7 @@ def compare_dics(cats = False):
         labels = ["6 layers", "7 layers", "8 layers"]
     f, ax = plt.subplots()
     for i, plot_array in enumerate(plot_arrays):
-        bw = (max - min) / np.sqrt(len(plot_array))*1.5
+        bw = (max - min) / np.sqrt(len(plot_array))*1
         print(plot_array)
         plot_kernel_distribution(plot_array, ax, label=labels[i], bw=bw,
                                  min=min, max=max, color = colors[i])
@@ -196,9 +196,9 @@ def compare_dics(cats = False):
     plt.ylabel("Relative number of pictures")
     plt.tight_layout()
     if cats:
-        plt.savefig("figures/plot_cats_vs_dogs_robustness_minimizer.pdf")
+        plt.savefig("report/figures/plot_cats_vs_dogs_robustness_minimizer.pdf")
     else:
-        plt.savefig("figures/plot_mnist_robustness_minimizer.pdf")
+        plt.savefig("report/figures/plot_mnist_robustness_minimizer.pdf")
     plt.show()
 
 
@@ -341,5 +341,5 @@ def manager_for_mnist():
 if __name__ == "__main__":
     #manager_for_cats_vs_dogs()
     #manager_for_mnist()
-    compare_dics(cats=False)
+    compare_dics(cats=True)
     #compare_dics_gradient(cats = True)

@@ -16,6 +16,7 @@ report/report_adv_examples.aux
 report/report_adv_examples.log
 report/report_adv_examples.synctex.gz
 report/report_adv_examples.pdf
+report/report_adv_examplesNotes.bib
 
 # Byte-compiled / optimized
 __pycache__/
@@ -23,3 +24,4 @@ __pycache__/
 
 #ignore data
 data/
+/report/report_adv_examples.pdf
