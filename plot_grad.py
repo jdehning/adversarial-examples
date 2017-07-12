@@ -22,8 +22,12 @@ def get_percentage_false_class_for_resultset(results):
     return np.array([count_success/count_correct_prediction, error])
 
 def read_models():
+    """
+    read the modelfiles for the mnist and cats vs dogs dataset and returns them in ordered
+    manner
+    """
     model_files_cvd = np.sort(glob.glob("./grad_results/cvd*N1024_f0003.npy"))
-    model_files_mnist = np.sort(glob.glob("./grad_results/mnist*N25000_f02.npy"))
+    model_files_mnist = np.sort(glob.glob("./grad_results/mnist*N1024_f02.npy"))
 
     model_files_cvd = np.append(model_files_cvd[1:], [model_files_cvd[0]])
 
@@ -74,32 +78,25 @@ def get_percentage_false_class(arr_of_results):
     return count_success, errors
 
 
-    percentages_cvd = []
-    percentages_mnist = []
-
-    for filename in model_files_cvd:
-        cur_result = np.load(filename)
-        percentages_cvd.append(get_percentage_false_class_for_resultset(cur_result))
-
-    for filename in model_files_mnist:
-        cur_result = np.load(filename)
-        percentages_mnist.append(get_percentage_false_class_for_resultset(cur_result))
-
-    return np.array(percentages_mnist), np.array(percentages_cvd)
-
-
 def plot_percentage_false_class(percentage, errors=None, xlabels=None, c=0.2):
     fig, ax = plt.subplots(figsize=constants.FIG_SIZE)
     x = range(len(percentage))
     if np.all(errors != None):
-        ax.errorbar(x, percentage, errors, fmt="o")
+        ax.bar(x, percentage, width=0.5, yerr=errors, alpha=0.8, ecolor="b")
+        ewidith = 0.2
+        for i in range(len(x)):
+            ax.plot([x[i]-ewidith, x[i]+ewidith], [percentage[i] - errors[0][i], percentage[i] - errors[0][i]], "b")
+            ax.plot([x[i]-ewidith, x[i]+ewidith], [percentage[i] + errors[1][i], percentage[i] + errors[1][i]], "b")
     else:
-        ax.plot(x, percentage, "o")
+        ax.bar(x, percentage)
     #plt.tight_layout()
+    ax.set_ylim(0, 1)
+    ax.set_xlim(min(x) - 0.51, max(x) + 0.51)
     ax.set_xlabel("number of layers")
     ax.set_ylabel("misclassification rate")
     #ax.set_title("Successrate of adversarial examples created with the gradient method and c = "+str(c))
     #ax.grid()
+    ax.legend(["$\epsilon=" + str(c) + "$"])
     ax.set_xticks(x)
     ax.set_xticklabels(xlabels)
 
