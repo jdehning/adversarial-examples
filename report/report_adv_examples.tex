@@ -44,7 +44,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}% Include figure files
 \usepackage{dcolumn}% Align table columns on decimal point
-\usepackage{bm}% bold math
+\usepackage{bm}
+\usepackage{siunitx}% bold math
 %\usepackage{hyperref}% add hypertext capabilities
 %\usepackage[mathlines]{lineno}% Enable numbering of text and display math
 %\linenumbers\relax % Commence numbering lines
@@ -128,7 +129,9 @@ The second data set is a selection from the Asirra data set provided by \emph{ka
 
 \subsection{The used networks}
 
-JAN
+We trained for each dataset three different networks, that differed in the number of the convolutional layers. Their exact design is described in the appendix. They are based on kernels published on the Kaggle website. The training was done with the Adam optimizer, with a learning rate of \SI{1e-3}{} for the MNIST networks and \SI{1e-4}{} for the Dogs vs Cats networks. The training was interrupted when the loss function of the validation set, consisting of \SI{20}{\percent} of the pictures didn't decrease for 5 respectively 3 epochs.
+
+
 
 \subsection{Methods for creating adversarial examples}
 
@@ -142,9 +145,9 @@ with the noise $\vec{\eta}$, the image $\vec{x}$, the loss function of the neura
 The label with the smallest value of the loss function $J_{loss}$ will be predicted by the neural network. The idea is to perturb the image in a way to increase this value for the true prediction in order to decrease the possibility, that the true label will be predicted. In order to achieve this one perturbs the image in direction of the gradient of the loss function with respect to the image input as this the direction in with the loss function will most increase. As the size of the gradient can vary strongly one uses just the direction and perturbs with a fixed ratio $\epsilon$. \cite{paperGrad}
 \subsubsection*{Minimize method}
 This method is based on the one presented on the method by \citeauthor{paperMinimize}, who proposed to minimize the L2-norm of the noise under the constrain, that the network performs a misclassification. As this is computationally very expensive, as this needs to be done individually for each label, in order to find the global minimum, we came up with the idea to minimize the L2-norm while minimizing the prediction of the true label, hence maximizing the loss function. In order to do this at the same time we came up with the following
-\begin{align*}
-\min_{\vec{\eta}} \left( c \cdot \sigma(\vec{\eta}) + \frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} \right) & \\
-\end{align*}
+\begin{align}
+\min_{\vec{\eta}} \left( c \cdot \sigma(\vec{\eta}) + \frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} \right) & \label{eq:minimize}\\
+\end{align}
 with the noise $\vec{\eta}$, the image $\vec{x}$, the standard deviation of the noise $\sigma (\vec{\eta})$, a scaling factor $c$ and a small factor $\delta$. As the goal is to minimize the L2-norm we chose the standard deviation to keep this formula scalable for different input dimensions (which is the L2-norm divided by square root of N). To minimize the prediction one could just simply add the prediction linearly, however better results were accomplished but adding the nonlinearity of $1/(1-p)$, as predictions close to one (which are unwanted) are stronger panelized. However as $p$ can reach a value of $1$ the function $1/(1 + \delta - p)$ was chosen with $\delta \ll 1$ in order to prevent devision by zero. The scaling constant $c$ is used to keep the two different parts in balanced. Unfortunately those where found to be not completely independent of the input dimensions, however just a factor of 10 apart for the MNIST and the dogs vs cats networks. For the MNIST networks a scaling factor of $c = 100$ and for dogs vs cats networks a scaling factor of $c = 1000$ was used. Those were found by a rough linear minimization.
 
 \subsection{Hypothesis}
@@ -158,8 +161,6 @@ On the other side it is well known that the spatial gradient is decreasing for a
 
 \subsection{Comparison of the methods}
 
-In the figure \ref{fig:examples} different examples of adversarial examples, created with the two different methods are shown. We remark that the standard deviation of the examples created with the minimizer method are smaller.
-
 \begin{figure}
 \centering
 \showthe\columnwidth
@@ -167,16 +168,19 @@ In the figure \ref{fig:examples} different examples of adversarial examples, cre
 \includegraphics[width = 1\linewidth]{figures/adv_example_minimizer_mnist_0.pdf}
 \includegraphics[width = 1\linewidth]{figures/cvd_model9_I0_f0003.pdf}
 \includegraphics[width = 1\linewidth]{figures/adv_example_minimizer_dogs_vs_cats_0.pdf}
-\caption{Comparison of the distribution of the minimized values of different networks for the MNIST dataset.}
+\caption{Adversarial examples created with the two methods using the two different networks. Top two: network trained using the MNIST dataset; bottom two: network trained using the dogs vs cats dataset. For each first: created using the gradient method, second: created using the minimize method. The left and right images range from 0 to 1 for 0 dark to 1 full intensity, while the image of the noise scales from negative to positive values evenly as the noise can also be negative.}
 \label{fig:examples}
 \end{figure}
+
+
+In the figure \ref{fig:examples} different examples of adversarial examples, created with the two different methods are shown. We remark that the standard deviation of the examples created with the minimizer method are smaller than the onces created with the gradient method. Both methods can be proven to create adversarial examples.\\
 
 \begin{figure}
 \centering
 \showthe\columnwidth
 \includegraphics[width = 1\linewidth]{figures/mnist_grad_misclassificationrate.pdf}
 \caption{The misclassification rate of different networks for adveraerial examples created with the gradient method with a fixed $\epsilon$ of 0.2 for the MNIST dataset.}
-\label{fig:comp_grad_cats_vs_dogs}
+\label{fig:comp_grad_mnist}
 \end{figure}
 
 \begin{figure}
@@ -186,6 +190,8 @@ In the figure \ref{fig:examples} different examples of adversarial examples, cre
 \caption{The misclassification rate of different networks for adversarial examples created with the gradient method with a fixed $\epsilon$ of 0.03 for the Cats vs Dogs dataset.}
 \label{fig:comp_grad_cats_vs_dogs}
 \end{figure}
+
+As described in section \ref{sec:} neural networks are likely to become more robust with higher depth. In order to investigate this neural networks with one convolutional layer more and one convolutional layer less compared to the above used have been created and trained on the same datasets. To compare the robustness for the gradient method, the number of misclassifications (number of successful adversarial examples) for a fixed $\epsilon$ was calculated for a set of images. If the network gets more robust towards adversarial examples with higher depth, the misclassification rate should decrease. In figure \ref{fig:comp_grad_mnist} this was plotted for the MNIST networks. The predicted trend could not be validated in this case. In figure \ref{fig:comp_grad_cats_vs_dogs} this was plotted for the dogs vs cats networks, where this trend is visible. \\
 
 \begin{figure}
 \centering
@@ -203,14 +209,67 @@ In the figure \ref{fig:examples} different examples of adversarial examples, cre
 \label{fig:comp_min_cats_vs_dogs}
 \end{figure}
 
+As for the minimize method one cannot compare this rate for a fixed $\epsilon$ as this method does not use such a parameter and does produce the minimal noise for which a misclassification happens. In order to still study this hypothesis, the distribution of the final values of the minimize function \eqref{eq:minimize} were plotted in figure \ref{fig:comp_min_mnist} for the MNIST networks and \ref{fig:comp_min_cats_vs_dogs} for the dogs vs cats networks. Here one yields the same results as with the gradient method. There is no obvious trend for the MNIST networks, however a clear trend for the dogs vs cats networks is noticeable.\\
+
 \section{Conclusion}
 
-As visible in figure \ref{fig:} adversarial examples could successfully be created with both presented methods, which are just sightly to not visible at all using the human eye. Overall the minimizer seems to produces better results, as the standard deviation of the noises is in average smaller compared to the onces using the gradient method. This is achieved at the cost of higher computation time. The gradient method produces decent results in short time, while the minimizer produces better results at higher computational cost. \\
-The hypothesis of the dependency of the robustness of the networks to the deepness (number of layers) of the networks could not be proven as seen in figure \ref{fig:}. However for the networks trained on the dogs vs cats dataset such a trend was visible. In order to actually conclude the truth of this hypothesis, one would need to train a lot more networks with different deepness. As our computational power was limited, this was not possible to us. However we could show that small changes in deepness will not always but can make a change in robustness against adversarial examples.\\
-Furthermore, it seems that networks get a lot more vulnerable regarding adversarial examples the large the input dimension is. The dogs vs cats trained networks, which had an input dimension of $(128 \times 128 \times 3)$ produced adversarial examples which were not visible at all, while the MNIST trained networks with an input dimension of $(28 \times 28 \times 1)$ produced noises with which one could still clearly see the original shape, however the noise was visible in the adversarial example (see figure \ref{fig:}).\\
+As visible in figure \ref{fig:examples} adversarial examples could successfully be created with both presented methods, which are just sightly to not visible at all using the human eye. Overall the minimizer seems to produces better results, as the standard deviation of the noises is in average smaller compared to the onces using the gradient method. This is achieved at the cost of higher computation time. The gradient method produces decent results in short time, while the minimizer produces better results at higher computational cost. \\
+The hypothesis of the dependency of the robustness of the networks to the deepness (number of layers) of the networks could not be proven as seen in figure \ref{fig:comp_grad_mnist} \& \ref{fig:comp_min_mnist}. However for the networks trained on the dogs vs cats dataset such a trend was visible (figure \ref{fig:comp_grad_cats_vs_dogs} \& \ref{fig:comp_min_cats_vs_dogs}). In order to actually conclude the truth of this hypothesis, one would need to train a lot more networks with different deepness. As our computational power was limited, this was not possible to us. However we could show that small changes in deepness will not always but can make a change in robustness against adversarial examples.\\
+Furthermore, it seems that networks get a lot more vulnerable regarding adversarial examples the large the input dimension is. The dogs vs cats trained networks, which had an input dimension of $(128 \times 128 \times 3)$ produced adversarial examples which were not visible at all, while the MNIST trained networks with an input dimension of $(28 \times 28 \times 1)$ produced noises with which the original shape is still recognizable, however the noise was visible in the adversarial example (figure \ref{fig:examples}).\\
 
 
+\bibliography{refs}
 
+\section*{Appendix}
+
+\begin{table}
+\begin{tabular}{c | c | c}
+6 layers & 7 layers & 8 layers  \\ \hline\hline
+28x28 CL 32 & 28x28 CL 32 & 28x28 CL 32 \\
+28x28 CL 32 & 28x28 CL 32 & 28x28 CL 32 \\
+ &   & 28x28 CL 32 \\
+2x2 Pool & 2x2 Pool & 2x2 Pool \\
+14x14 CL 64 & 14x14 CL 64 & 14x14 CL 64\\
+14x14 CL 64 & 14x14 CL 64 & 14x14 CL 64\\
+ & 14x14 CL 64 & 14x14 CL 64\\
+2x2 Pool & 2x2 Pool  & 2x2 Pool \\
+Dropout 0.2 & Dropout 0.2 & Dropout 0.2\\
+128 Dense & 128  Dense& 128 Dense\\
+10 Output & 10 Output & 10 Output
+\end{tabular}
+\caption{The design of the different networks for the MNIST dataset. CL means convolutional network followed with the depth (the number of ``maps'') of the layer.  In front of the layer names are written the number of neurons. Pool is a pooling layer, Dense a fully connected, and output the Output layer with a softmax function. The other layers have all rectifier activation functions (ReLu).}
+\label{tab:mnist_netw}
+\end{table}
+
+\begin{table}
+\begin{tabular}{c | c | c}
+13 layers & 14 layers & 15 layers  \\ \hline\hline
+128x128 CL 32 & 128x128 CL 32 & 128x128 CL 32 \\
+128x128 CL 32 & 128x128 CL 32 & 128x128 CL 32 \\
+2x2 Pool & 2x2 Pool & 2x2 Pool \\
+64x64 CL 64 & 64x64 CL 64 & 64x64 CL 64\\
+64x64 CL 64 & 64x64 CL 64 & 64x64 CL 64\\
+2x2 Pool & 2x2 Pool  & 2x2 Pool \\
+32x32 CL 128 & 32x32 CL 128 & 32x32 CL 128\\
+32x32 CL 128 & 32x32 CL 128 & 32x32 CL 128\\
+ 2x2 Pool & 2x2 Pool  & 2x2 Pool \\
+16x16 CL 256 & 16x16 CL 256 & 16x16 CL 256\\
+16x16 CL 256 & 16x16 CL 256 & 16x16 CL 256\\
+ &  & 16x16 CL 256\\
+  2x2 Pool & 2x2 Pool  & 2x2 Pool \\
+8x8 CL 256 & 8x8 CL 256 & 8x8 CL 256\\
+8x8 CL 256 & 8x8 CL 256 & 8x8 CL 256\\
+ & 8x8 CL 256 & 8x8 CL 256\\
+ 2x2 Pool & 2x2 Pool  & 2x2 Pool \\
+256 Dense & 256  Dense& 256 Dense\\
+Dropout 0.5 & Dropout 0.5 & Dropout 0.5\\
+256 Dense & 256  Dense& 256 Dense\\
+Dropout 0.5 & Dropout 0.5 & Dropout 0.5\\
+2 Output & 2 Output & 2 Output
+\end{tabular}
+\caption{The design of the different networks for the Dogs vs Cats data set. The legend is the same as table \ref{tab:mnist_netw}}
+\label{tab:dvc_netw}
+\end{table}
 
 \end{document}
 %
