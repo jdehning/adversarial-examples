@@ -108,36 +108,37 @@ In this work we generated adversarial examples for convolutional networks traine
 
 \section{Introduction}
 
-In general machine learning techniques are vulnerable to adversarial examples, meaning that they misclassify examples which are only slightly different to correctly classified ones. In many cases different machine learning techniques, even if trained on different subsets of the training data, misclassify the same adversarial examples. Thus adversarial examples seem to reveal a fundamental weakness of those machine learning techniques. Furthermore this suggests that these techniques are unable to learn the true underlying concepts for the correct classification, although they perform extremely well on the training data. They work well for naturally occurring data but fail if they visit points in space that are unlikely to occur in the data. This is problematic for computer vision where it is assumed that the Euclidean distance approximates the perceptual distance.
+Convolutional neural networks for classifying images are already used by a large number of companies, by Facebook to identify faces or Tesla to recognize people crossing the street in front of the car. 
+However these neural networks are vulnerable to adversarial examples, meaning that they misclassify some images which are only slightly different to correctly classified ones. In many cases different machine learning techniques, even if trained on different subsets of the training data, misclassify the same adversarial examples \cite{paperGrad}. Thus adversarial examples seem to reveal a fundamental weakness of those machine learning techniques. Furthermore this suggests that these techniques are unable to learn the true underlying concepts for the correct classification, although they perform extremely well on the training data. They work well for naturally occurring data but fail if they visit points in space that are unlikely to occur in the data. This is problematic for computer vision where it is assumed that the Euclidean distance approximates the perceptual distance.
 
 In course of the increasing use of neural networks the understanding of their weaknesses is of growing interest. To be able to better understand the effects of adversarial examples on neural networks one first has to find ways how to create these. That's why we tested two different methods on two different data sets. Furthermore we analyzed how the robustness of our networks depends on the depth of the network.
 
 \subsection{Convolutional Neural Networks}
 
-Convolutional neural networks are used to categorize images. The are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices each one applied to the whole image, also called filters, are used. The results of the different convolutions are set as input for different ``maps'' in a convolutional layer. Between convolutional layers, pooling layers are inserted. They reduce the number of the previous by taking the maximum of a square of 2x2 pixels in our case. To counterbalance the reduced resolution the number of pixels, the number of maps of the following convolutional layers are increased.
 
-At the end some fully connected layers are inserted. There every neuron is connected to every other one.
+In this analysis we only used convolutional neural networks. They are composed of successive convolutional and pooling layers. In the convolutional layer each pixel (neuron) gets the input of the surrounding pixels of the previous layer or the image, and multiply it by a matrix, thus making a convolution. The convolutional matrix is the same for the whole image but typically for each convolutional layer a set of matrices are used, each one applied to the whole image. The results of the different convolutions are set as input for different ``maps'' in a convolutional layer. Between convolutional layers, pooling layers are inserted. They reduce the number of the previous by taking the maximum of a square of 2x2 pixels in our case. To counterbalance the reduced resolution the number of pixels, the number of maps of the following convolutional layers are increased.
 
-This sort of network mimic the visual areas of mammals. There neurons typically respond to a small region of the visual field called receptive field. The size of the receptive fields increase in areas higher in the visual hierarchy, like in a convolutional network with pooling layers.
+At the end some fully connected layers are inserted. There every neuron is connected to every neuron from the previous layer.
+
+This sort of network mimic the visual areas of the brain. There neurons typically respond to a small region of the visual field called receptive field. The size of the receptive fields increase in areas higher in the visual hierarchy, like in a convolutional network with pooling layers.
 
 \subsection{The Data Sets}
 
-We used two different data sets. The first is the MNIST data set downloaded from \emph{kaggle.com}, which contains a little more than 40,000 grayscale images of handwritten digits. Each image has $28\times 28$ pixels, resulting in a 784 dimensional vector representing one image. 
+We used two different data sets. The first is the MNIST data set downloaded from \emph{kaggle.com}, which contains a little more than 40,000 greyscale images of handwritten digits. Each image has $28\times 28$ pixels, resulting in a 784 dimensional vector representing one image. 
 
 The second data set is a selection from the Asirra data set provided by \emph{kaggle.com} for the ``Dogs vs. Cats'' challenge. It contains 25,000 colored images of dogs and cats of different sizes. That's why we rescaled them to $128\times 128$ pixels each. With 3 color channels this leads to a 49,152 dimensional vector representing each image. 
 \section{Methods}
 
 \subsection{The used networks}
 
-We trained for each dataset three different networks, that differed in the number of the convolutional layers. Their exact design is described in the appendix. They are based on kernels published on the Kaggle website. The training was done with the Adam optimizer, with a learning rate of \SI{1e-3}{} for the MNIST networks and \SI{1e-4}{} for the Dogs vs Cats networks. The training was interrupted when the loss function of the validation set, consisting of \SI{20}{\percent} of the pictures didn't decrease for 5 respectively 3 epochs.
-
-
+We trained for each dataset three different networks, that differed in the number of the convolutional layers. Their exact design is described in the appendix. They are based on networks published on the Kaggle website. The training was done with the Adam optimizer, with a learning rate of \SI{1e-3}{} for the MNIST networks and \SI{1e-4}{} for the Dogs vs Cats networks. The training was interrupted when the loss function of the validation set, consisting of \SI{20}{\percent} of the pictures didn't decrease for 5 respectively 3 epochs. 
+We used the Keras library with the Tensorflow backend to generate the networks.
 
 \subsection{Methods for creating adversarial examples}
 
-There are various ideas, that have already been used to create adversarial examples. In this project we tagged along the propositions of \citeauthor{paperGrad} who proposed to create a noise in the direction of the gradient of the loss function and \citeauthor{paperMinimize} who proposed to minimize the L2-norm of the noise under misclassification.
+There are various ideas that have already been used to create adversarial examples. In this project we followed the propositions of \citeauthor{paperGrad} who created a noise in the direction of the gradient of the loss function and \citeauthor{paperMinimize} who proposed to minimize the L2-norm of the noise under misclassification.
 \subsubsection*{Gradient method}
-In this method a noise is created in the direction of the gradient with the given formular:
+In this method a noise is created in the direction of the gradient with the given formula:
 \begin{align*}
 \vec{\eta} = \epsilon \cdot \operatorname{sign} \left( \nabla_{\vec{x}} J_{loss} \big \vert_{\vec{x}} \right)
 \end{align*}
