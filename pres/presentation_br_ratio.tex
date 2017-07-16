@@ -125,7 +125,7 @@ Minimize over $\eta$:
 &\vec{\eta}: \text{noise} \\
 &\vec{x}: \text{picture} \\
 &p: \text{prediction} \\
-&c: \text{a constant} \\
+&c: \text{scaling constant} \\
 &\delta \ll 1 
 \end{align*}
 
@@ -134,7 +134,7 @@ with constraint:
 \vec{x}+\vec{\eta}\in [0,1]^n
 \end{equation*}
 
-From Szegedy et al. 2014
+Based on Szegedy et al. 2014
 \end{frame}
 
 \section{Visualization of adversarial examples}
@@ -201,18 +201,6 @@ From Szegedy et al. 2014
 
 \begin{frame}
 \frametitle{Conclusion} 
-\begin{figure}
-%\begin{itemize}
-%\item Minimizer: 
-%\begin{itemize}
-%\item smaller noise
-%\item computationally expensive
-%\end{itemize}
-%\item Gradient: 
-%\begin{itemize}
-%\item larger noise
-%\item computationally cheap
-%\end{itemize}
 
 \begin{itemize}
 \item Minimizer: smaller noise
@@ -220,18 +208,10 @@ From Szegedy et al. 2014
 \end{itemize}
 \hspace{2em}
 \begin{itemize}
-\item MNIST: 
-\begin{itemize}
-\item robust
-\item no dependence on number of layers found
+\item higher dimensionality seems to increase vulnerability
+\item deeper networks not necessarily more robust
 \end{itemize}
-\item Dogs vs. Cats: 
-\begin{itemize}
-\item vulnerable
-\item deeper networks seemingly less vulnerable
-\end{itemize} 
-\end{itemize}
-\end{figure}
+
 \end{frame}
 
 
