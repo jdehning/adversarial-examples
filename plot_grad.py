@@ -95,7 +95,7 @@ def plot_percentage_false_class(percentage, errors=None, xlabels=None, c=0.2):
     ax.set_ylabel("misclassification rate")
     #ax.set_title("Successrate of adversarial examples created with the gradient method and c = "+str(c))
     #ax.grid()
-    ax.legend(["$\epsilon=" + str(c) + "$"])
+    ax.legend(["$\epsilon=" + str(c) + "$"], loc = "upper center")
     ax.set_xticks(x)
     ax.set_xticklabels(xlabels)
     plt.tight_layout()
