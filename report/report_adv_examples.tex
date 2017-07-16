@@ -129,15 +129,15 @@ We used two different data sets. The first is the MNIST data set downloaded from
 The second data set is a selection from the Asirra data set provided by \emph{kaggle.com} for the ``Dogs vs. Cats'' challenge. It contains 25,000 colored images of dogs and cats of different sizes. We rescaled them to $128\times 128$ pixels each. With 3 color channels this leads to a 49,152 dimensional input vector representing each image. 
 \section{Methods}
 
-\subsection{The used networks}
+\subsection{The Used Networks}
 
 We trained for each data set three different networks, that differed in the number of the convolutional layers. Their exact structure is described in table \ref{tab:mnist_netw} \& \ref{tab:dvc_netw} in the appendix. They are based on networks published on the Kaggle website. The training was done with the Adam optimizer, with a learning rate of \SI{1e-3}{} for the MNIST networks and \SI{1e-4}{} for the Dogs vs. Cats networks. The training was interrupted when the loss function of the validation set, consisting of \SI{20}{\percent} of the pictures didn't decrease for 5 respectively 3 epochs. 
 We used the \textsc{Keras} library with the \textsc{Tensorflow} backend to generate the networks.
 
-\subsection{Methods for creating adversarial examples}
+\subsection{Methods for Creating Adversarial Examples}
 
 There are various ideas that have already been used to create adversarial examples. In this project we followed the propositions of \citet{paperGrad} who created a noise in the direction of the gradient of the loss function and \citet{paperMinimize} who proposed to minimize the L2-norm of the noise under misclassification.
-\subsubsection*{Gradient method}
+\subsubsection*{Gradient Method}
 
 For this method a noise is created in the direction of the gradient with the given formula:
 \begin{align*}
@@ -147,7 +147,7 @@ where $\vec{\eta}$ denotes the noise, $\vec{x}$ the image, $J_{loss}$ the loss f
 
 The label with the smallest value of the loss function $J_{loss}$ will be predicted by the neural network. The idea is to perturb the image in such a way, that this value is increased for the true prediction, in order to decrease the probability, that the true label will be predicted. One perturbs the image in direction of the gradient of the loss function with respect to the image input, as this is the direction in which the loss function will increase the most. A linear approximation yields decent results, as deep neural networks are too linear to resist such a perturbation. Furthermore, as the size of the gradient can vary strongly, one needs to add some kind of normalization. The simplest way is to use the direction with a fixed distance. As the noise will always be a discrete pixel value, for perfect adversarial examples one can achieve changes of only $\pm 1$ color step, which are invisible to the human eye. \cite{paperGrad}
 
-\subsubsection*{Minimize method}
+\subsubsection*{Minimize Method}
 
 This method is based on the one presented by \citet{paperMinimize}, who proposed to minimize the L2-norm of the noise under the constraint, that the network performs a misclassification. Specifically they minimized the following function over $\vec{\eta}$:
 
@@ -168,7 +168,7 @@ As $p$ can reach a value of one, a $\delta \ll 1$ was added to the denominator i
 To minimize the computational time, the jacobian of the minimizing function was calculated with  \textsc{Tensorflow}.
 
 
-\subsection{Robustness of neural networks}
+\subsection{Robustness of Neural Networks}
 \label{sec:hypothesis}
 
 How robust a network is to adversarial examples is no easy task to predict. \citet{paperGrad} argues that adversarial examples can be explained by linear behavior in high-dimensional spaces and that most neural networks are kept near the linear regime for training purposes. Following this argumentation one has to expect that neural networks with a high-dimensional input will be more vulnerable to adversarial examples.
