@@ -120,7 +120,7 @@ In this analysis we only used convolutional neural networks. They are composed o
 
 At the end some fully connected layers are inserted for the classification process. There every neuron is connected to every neuron from the previous layer \cite{Goodfellow-et-al-2016}.
 
-This sort of network mimics the visual cortex of the brain. There neurons typically respond to a small region of the visual field called receptive field. The size of the receptive fields increases in areas later in the visual pathway, like in a convolutional network with pooling layers.
+This sort of network mimics the visual cortex of the brain. There neurons typically respond to a small region of the visual field called receptive field. The size of the receptive fields increases in areas later in the visual pathway, like in a convolutional network with pooling layers \cite{visualCortex}.
 
 \subsection{The Data Sets}
 
@@ -136,7 +136,7 @@ We used the \textsc{Keras} library with the \textsc{Tensorflow} backend to gener
 
 \subsection{Methods for creating adversarial examples}
 
-There are various ideas that have already been used to create adversarial examples. In this project we followed the propositions of \citeauthor{paperGrad} who created a noise in the direction of the gradient of the loss function and \citeauthor{paperMinimize} who proposed to minimize the L2-norm of the noise under misclassification.
+There are various ideas that have already been used to create adversarial examples. In this project we followed the propositions of \citet{paperGrad} who created a noise in the direction of the gradient of the loss function and \citet{paperMinimize} who proposed to minimize the L2-norm of the noise under misclassification.
 \subsubsection*{Gradient method}
 
 For this method a noise is created in the direction of the gradient with the given formula:
@@ -149,7 +149,7 @@ The label with the smallest value of the loss function $J_{loss}$ will be predic
 
 \subsubsection*{Minimize method}
 
-This method is based on the one presented by \citeauthor{paperMinimize}, who proposed to minimize the L2-norm of the noise under the constraint, that the network performs a misclassification. Specifically they minimized the following function over $\vec{\eta}$:
+This method is based on the one presented by \citet{paperMinimize}, who proposed to minimize the L2-norm of the noise under the constraint, that the network performs a misclassification. Specifically they minimized the following function over $\vec{\eta}$:
 
 \begin{align}
 c||\vec{\eta}||_2 + \text{loss}_f (\vec{x}+\vec{\eta}, l),
@@ -171,7 +171,7 @@ To minimize the computational time, the jacobian of the minimizing function was 
 \subsection{Robustness of neural networks}
 \label{sec:hypothesis}
 
-How robust a network is to adversarial examples is no easy task to predict. \citeauthor{paperGrad} argues that adversarial examples can be explained by linear behavior in high-dimensional spaces and that most neural networks are kept near the linear regime for training purposes. Following this argumentation one has to expect that neural networks with a high-dimensional input will be more vulnerable to adversarial examples.
+How robust a network is to adversarial examples is no easy task to predict. \citet{paperGrad} argues that adversarial examples can be explained by linear behavior in high-dimensional spaces and that most neural networks are kept near the linear regime for training purposes. Following this argumentation one has to expect that neural networks with a high-dimensional input will be more vulnerable to adversarial examples.
 
 Furthermore it seems plausible that deeper networks will be more nonlinear and thus be more robust against adversarial examples. Also a deeper network has more neurons and thus should be able to approximate more functions closely according to the universal approximation theorem \cite{HORNIK1991251}. With this in mind our idea was to test the robustness of our networks trained with this two data sets for different depths.
 %On the other hand it is well known that the spatial gradient is decreasing for an increasing number of layer. This phenomenon is known as the \emph{vanishing gradient problem}. Since the adversarial example is nothing more than a noise added to a training example, the prediction error depends on how much this noise is changing the loss function. This is reflected by the gradient. Thus our assumption is, that a smaller gradient should lead to a more robust network and that a smaller gradient is equivalent to a deeper network.
@@ -245,9 +245,11 @@ Furthermore, it seems that networks become a lot more vulnerable regarding adver
 
 \bibliography{refs}
 
+\clearpage	
+
 \section*{Appendix}
 
-\begin{table}
+\begin{table}[h]
 \begin{tabular}{c | c | c}
 6 layers & 7 layers & 8 layers  \\ \hline\hline
 28x28 CL 32 & 28x28 CL 32 & 28x28 CL 32 \\
@@ -266,7 +268,7 @@ Dropout 0.2 & Dropout 0.2 & Dropout 0.2\\
 \label{tab:mnist_netw}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
 \begin{tabular}{c | c | c}
 13 layers & 14 layers & 15 layers  \\ \hline\hline
 128x128 CL 32 & 128x128 CL 32 & 128x128 CL 32 \\
