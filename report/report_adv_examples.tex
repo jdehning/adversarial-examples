@@ -108,10 +108,10 @@ In this work we generated adversarial examples for convolutional networks traine
 
 \section{Introduction}
 
-Convolutional neural networks for classifying images are already used by a large number of companies, by Facebook to identify faces or Tesla to recognize people crossing the street in front of the car. 
-However these neural networks are vulnerable to adversarial examples, meaning that they misclassify some images which are only slightly different to correctly classified ones. In many cases different machine learning techniques, even if trained on different subsets of the training data, misclassify the same adversarial examples \cite{paperGrad}. Thus adversarial examples seem to reveal a fundamental weakness of those machine learning techniques. Furthermore this suggests that these techniques are unable to learn the true underlying concepts for the correct classification, although they perform extremely well on the training data. They work well for naturally occurring data but fail if they visit points in space that are unlikely to occur in the data. This is problematic for computer vision where it is assumed that the Euclidean distance approximates the perceptual distance \cite{paperGrad}.
+Convolutional neural networks for classifying images are already used by a large number of companies, by \textsc{Facebook} to identify faces or \textsc{Tesla} to recognize people crossing the street in front of the car. 
+However these neural networks are vulnerable to adversarial examples, meaning that they misclassify some images which are only slightly different to correctly classified ones, even if the difference isn't visible to the naked eye. This suggests that neural networks are unable to learn the true underlying concepts for the correct classification, although they perform extremely well on the training data. It reveals a fundamental weakness of those machine learning techniques \cite{paperGrad}.
 
-In course of the increasing use of neural networks the understanding of their weaknesses is of growing interest. To be able to better understand the effects of adversarial examples on neural networks one first has to find ways how to create these. That's why we tested two different methods on two different data sets. Furthermore we analyzed how the robustness of our networks depends on the depth of the network.
+In course of the increasing use of neural networks the understanding of their shortcomings is of growing interest. To be able to better understand the effects of adversarial examples on neural networks one first has to find ways how to create these. That's why we tested two different methods on two different data sets. Furthermore we analyzed how the robustness of our networks depends on the depth of the network.
 
 \subsection{Convolutional Neural Networks}
 
@@ -149,11 +149,24 @@ The label with the smallest value of the loss function $J_{loss}$ will be predic
 
 \subsubsection*{Minimize method}
 
-This method is based on the one presented by \citeauthor{paperMinimize}, who proposed to minimize the L2-norm of the noise under the constrain, that the network performs a misclassification. This is computationally very expensive, because it needs to be done individually for each label in order to find the global minimum. Thus we came up with the idea to minimize the L2-norm while also minimizing the prediction of the true label, hence maximizing the loss function. In order to do both at the same time, we came up with the following concept
+This method is based on the one presented by \citeauthor{paperMinimize}, who proposed to minimize the L2-norm of the noise under the constraint, that the network performs a misclassification. Specifically they minimized the following function over $\vec{\eta}$:
+
 \begin{align}
-\min_{\vec{\eta}} \left( c \cdot \sigma(\vec{\eta}) + \frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} \right) & \label{eq:minimize}
+c||\vec{\eta}||_2 + \text{loss}_f (\vec{x}+\vec{\eta}, l),
 \end{align}
-where $\vec{\eta}$ denotes the noise, $\vec{x}$ the image, $\sigma (\vec{\eta})$ the standard deviation of the noise, $c$ a scaling factor and $\delta$ a small number. As the goal is to minimize the L2-norm we chose the standard deviation (which is the L2-norm divided by square root of N) to keep this formula scalable for different input dimensions. To minimize the prediction one could add it linearly, however better results were accomplished by adding the nonlinearity $1/(1-p)$, as predictions close to one (which are unwanted) are stronger penalized. As $p$ can reach a value of one, a $\delta \ll 1$ was added to the denominator in order to prevent division by zero. The scaling constant $c$ is used to keep the two different parts balanced. Unfortunately those where found to be not completely independent of the input dimension, though, just a factor of 10 apart for the MNIST and the Dogs vs. Cats networks. For the MNIST networks a scaling factor of $c = 100$ and for Dogs vs. Cats networks a scaling factor of $c = 1000$ were found by a rough linear minimization. Nevertheless the difference is quite small compared to the difference of the input dimensions.
+
+where $\vec{\eta}$ is the noise added, $\vec{x}$ the image,  $\text{loss}_f$ the loss function and $l$ the label of the wanted adversarial example. The scaling constant $c$ was used to keep the two different parts balanced. For each image they ran this minimizer for different $c$ in order to find the minimal $c$ for which the prediction $\vec{x}+\vec{\eta}$ is false. In order to find the minimal adversarial example one would need to perform this method for each label. 
+
+As this double minimizer for each label is computationally expensive, we came up with the idea to minimize the prediction of the true label, hence maximizing the loss function, and to add a nonlinearity. The minimizer function we used is thus:
+
+\begin{align}
+\min_{\vec{\eta}} \left( \frac{c}{\sqrt{n}} \cdot ||\vec{\eta}||_2 + \frac{1}{1 + \delta - p(\vec{x}+\vec{\eta})} \right), & \label{eq:minimize}
+\end{align}
+with $\delta$ a small number, $p$ the predicted probability of the correct label and $n$ the number of pixels. The $\sqrt{n}$ factor was added to normalize the number of pixels. To minimize the prediction one could add $p$ linearly, however better results were accomplished by adding the nonlinearity $1/(1-p)$, as predictions close to one (which are unwanted) are stronger penalized. Because of this nonlinearity the large majority of the created noises lead to false predictions without the need to minimize $c$ for each image individually.  The constant $c$ was determined by a rough minimization of some images of both datasets. 
+For the MNIST networks $c = 100$  was then chosen and for the Dogs vs. Cats networks $c = 1000$. 
+As $p$ can reach a value of one, a $\delta \ll 1$ was added to the denominator in order to prevent division by zero.
+To minimize the computational time, the jacobian of the minimizing function was calculated with  \textsc{Tensorflow}.
+
 
 \subsection{Robustness of neural networks}
 \label{sec:hypothesis}
