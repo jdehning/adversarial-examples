@@ -211,7 +211,7 @@ def return_min_noise_for_false_classification(model, images, results, indicies):
 
         res_optimization = scipy.optimize.basinhopping(min_func, [0.5], T = 0.05, stepsize = 0.2,
                                                        accept_test = set_bounds_test, niter = n_iter_basinhopping,
-                                                       minimizer_kwargs = {"method":"L-BFGS-B",
+                                                       minimizer_kwargs = {"method":"L-BFGS-B", "jac:"
                                                                            "options": {"eps":0.001, "ftol":1e-5}})
         #print(i, res_optimization.x[0])
         modified_image = modify_single_image(images[i], res_optimization.x[0])
